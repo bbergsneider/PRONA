@@ -1,0 +1,19 @@
+---
+title: "Severity and Occurrence Plot Test"
+author: "Brandon Bergsneider"
+date: "2023-02-27"
+output: html_document
+---
+
+```{r}
+library('PRONA')
+```
+
+```{r}
+df <- read.csv(system.file('extdata','qs_formatted.csv', package='PRONA'), stringsAsFactors = FALSE)
+```
+
+```{r}
+plot_severity(df, y_label='frequency')
+```
+
