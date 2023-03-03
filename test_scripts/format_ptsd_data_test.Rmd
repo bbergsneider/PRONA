@@ -6,25 +6,19 @@ output: html_document
 ---
 
 ```{r}
-library('PRONA')
+library("PRONA")
 ```
 
 ```{r}
-FullData <- read.csv('../data/qs.csv', stringsAsFactors = FALSE)
+full_data <- read.csv("original_data/qs.csv", stringsAsFactors = FALSE)
 ```
 
 ```{r}
-Data <- PRONA::format_ptsd_data(FullData)
+data <- PRONA::format_ptsd_data(full_data)
 ```
 
 ```{r}
-write.csv(Data, '../data/qs_formatted.csv', row.names = FALSE)
+head(data)
 ```
-
-```{r}
-NewData <- read.csv(system.file('extdata','qs_formatted.csv', package='PRONA'), stringsAsFactors = FALSE)
-```
-
-
 
 

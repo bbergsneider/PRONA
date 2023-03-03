@@ -14,6 +14,17 @@ df <- read.csv(system.file('extdata','qs_formatted.csv', package='PRONA'), strin
 ```
 
 ```{r}
-plot_severity(df, y_label='frequency')
+plot_severity(df)
 ```
 
+```{r}
+plot_frequency(df)
+```
+
+```{r}
+plot_occurrence(df)
+```
+
+```{r}
+plot_occurrence(df, cutoff = 2)
+```

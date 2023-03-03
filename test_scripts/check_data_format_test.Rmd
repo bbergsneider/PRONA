@@ -1,0 +1,30 @@
+---
+title: "Test check_data_format function"
+author: "Brandon Bergsneider"
+date: "2023-03-03"
+output: html_document
+---
+
+```{r}
+library("PRONA")
+```
+
+```{r}
+# Check properly formatted df
+df <- read.csv(system.file('extdata','qs_formatted.csv', package='PRONA'), stringsAsFactors = FALSE)
+check_data_format(df)
+```
+
+```{r}
+# Check improperly formatted df (first column not named ID)
+df2 <- read.csv('original_data/qs_formatted_bad_format_ID.csv', stringsAsFactors = FALSE)
+check_data_format(df2)
+```
+
+```{r}
+# Check improperly formatted df (not all symptom data is numerical)
+df3 <- read.csv('original_data/qs_formatted_bad_format_numerical.csv', stringsAsFactors = FALSE)
+check_data_format(df3)
+```
+
+
