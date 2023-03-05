@@ -1,0 +1,112 @@
+---
+title: "PRONA Full Run Through"
+author: "Brandon Bergsneider"
+date: "2023-03-05"
+output: html_document
+---
+
+# 1. Load the PRONA package
+
+```{r}
+library("PRONA")
+```
+
+# 2. Read-in formatted PTSD data
+
+```{r}
+# The formatted PTSD data is included in the PRONA package and can be
+# read-in as such:
+df <- read.csv(system.file('extdata','qs_formatted.csv', package='PRONA'), stringsAsFactors = FALSE)
+```
+
+# 3. Plot the frequency and occurrence of all symptoms, which may help determine which variables to consolidate
+
+```{r}
+plot_frequency(df)
+```
+
+```{r}
+plot_occurrence(df)
+```
+
+# 4. Perform Unique Variable Analysis to consolidate redundant variables
+
+```{r}
+# First conduct redundancy analysis without latent variable reduction to
+# visualize overlap between variables
+uva_results1 <- perform_uva(df)
+```
+
+```{r fig.width=5, fig.height=3}
+plot_wTO(uva_results1)
+```
+
+```{r}
+# Now conduct UVA with variable consolidation. Chose to consolidate two variable
+# pairs:
+# 1. Being Jumpy Or Easily Startled & Being Over Alert
+# 2. Upset When Reminded of Trauma & Upsetting Thoughts Or Images
+uva_results2 <- perform_uva(df, reduce = TRUE, scale = 3, output_dir = 'output')
+```
+
+```{r}
+# Get reduced dataframe
+reduced_df <- read.csv('output/reduced_data.csv', stringsAsFactors = FALSE)
+```
+
+```{r}
+# Plot frequency
+plot_frequency(reduced_df)
+```
+
+```{r}
+# Plot occurrence of reduced data
+plot_occurrence(reduced_df)
+```
+
+# 5. Check the normality of variables before constructing a GGM
+
+```{r}
+check_normality(reduced_df)
+```
+
+```{r}
+plot_density(reduced_df)
+```
+
+# 6. Construct a GGM
+
+```{r}
+network1 <- construct_ggm(reduced_df)
+```
+
+```{r}
+network1_plot <- plot_ggm(network1)
+```
+
+```{r}
+get_ggm_weights(network1)
+```
+
+# 7. Calculate network centrality measurements
+
+```{r}
+calculate_centralities(network1)
+```
+
+```{r}
+plot_centralities(network1)
+```
+
+```{r}
+calculate_bridge_centralities(network1)
+```
+
+```{r}
+plot_bridge_centralities(network1)
+```
+
+
+
+
+
