@@ -25,8 +25,7 @@
 #' @export
 format_ptsd_data <- function(FullData){
     Data <- FullData %>%
-        dplyr::filter(EPOCH == "BASELINE",
-        grepl("^PSSR\\d+A$",QSTESTCD)) %>%
+        dplyr::filter(EPOCH == "BASELINE", grepl("^PSSR\\d+A$",QSTESTCD)) %>%
         dplyr::select(USUBJID,QSTEST,QSORRES) %>%
         tidyr::spread(QSTEST, QSORRES) %>%
         dplyr::rename("ID" = "USUBJID") %>%

@@ -4,7 +4,7 @@
 \alias{plot_occurrence}
 \title{Plot bar chart of occurrence}
 \usage{
-plot_occurrence(df, color = "royalblue", y_label = "occurrence", cutoff = 1)
+plot_occurrence(df, color = "#387db8", y_label = "occurrence", cutoff = 1)
 }
 \arguments{
 \item{df}{Dataframe of symptom severities or frequencies (PRONA format)}

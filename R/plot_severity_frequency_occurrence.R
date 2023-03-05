@@ -5,7 +5,6 @@
 #' and returns a bar chart of the severity for each
 #' symptom.
 #'
-#'
 #' @param df Dataframe of symptom severities (formatted as required by PRONA)
 #' @param color Color of the barplot (default green)
 #' @param y_label Y-axis label
@@ -57,7 +56,7 @@ plot_frequency <- function(df, color = "#4caf4a", y_label = "frequency"){
 #' @return A ggplot2 object of the occurrence barplot
 #' @export
 
-plot_occurrence <- function(df, color = "royalblue", y_label = "occurrence", cutoff = 1) {
+plot_occurrence <- function(df, color = "#387db8", y_label = "occurrence", cutoff = 1) {
     check_data_format(df) # Check if df is formatted properly
     df <- dplyr::select(df, -ID)
     symptom_frequencies <- round(colSums(df >= cutoff, na.rm = TRUE) / nrow(df) * 100, 1)

@@ -1,0 +1,27 @@
+```{r}
+library("PRONA")
+```
+
+```{r}
+df <- read.csv(system.file('extdata','qs_formatted.csv', package='PRONA'), stringsAsFactors = FALSE)
+```
+
+```{r}
+check_normality(df)
+```
+
+```{r}
+plot_density(df)
+```
+
+```{r}
+reduced_df <- read.csv("test_scripts/output/reduced_data.csv", stringsAsFactors = FALSE)
+```
+
+```{r}
+check_normality(reduced_df)
+```
+
+```{r}
+plot_density(reduced_df)
+```
