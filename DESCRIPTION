@@ -25,3 +25,7 @@ Imports:
     ggridges (>= 0.5.4),
     qgraph (>= 1.9.3),
     networktools (>= 1.5.0)
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr

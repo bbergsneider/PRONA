@@ -17,19 +17,23 @@
 #' @param scale The scale on which symptom severity/frequency is measured.
 #' For example if symptoms are measured on a 0-10 scale, scale = 10.
 #' (default: 1) (only applicable if reduce = TRUE)
+#' @param auto Boolean. Should redundancy reduction be automated?
+#' Defaults to FALSE for manual selection.
+#' @param label.latent 	Boolean. Should latent variables be manually labelled?
+#' Defaults to TRUE. Set to FALSE for arbitrary labelling (i.e., "LV_").
 #' @param output_dir Directory in which the .RDS and .csv outputs of UVA should
 #' be saved (only applicable if reduce = TRUE) (defaults to current directory)
 #' @return The list of the outputs from the UVA function as implemented
 #' in the R package EGAnet
 #' @export
 
-perform_uva <- function(df, reduce = FALSE, scale = 1, output_dir = "") {
+perform_uva <- function(df, reduce = FALSE, scale = 1, auto = FALSE, label.latent = FALSE,output_dir = "") {
     check_data_format(df) # Check if df is formatted properly
     ids <- df["ID"] # Save ID column
     df <- dplyr::select(df, -ID) # Get rid of ID column
 
     # Conduct UVA
-    uva_output <- EGAnet::UVA(data = df, reduce = reduce, auto = FALSE, adhoc = FALSE)
+    uva_output <- EGAnet::UVA(data = df, reduce = reduce, auto = auto, label.latent = label.latent, adhoc = FALSE)
 
     if (reduce) {
         # Save reduced data in a new dataframe

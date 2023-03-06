@@ -4,7 +4,14 @@
 \alias{perform_uva}
 \title{Perform Unique Variable Analysis (UVA)}
 \usage{
-perform_uva(df, reduce = FALSE, scale = 1, output_dir = "")
+perform_uva(
+  df,
+  reduce = FALSE,
+  scale = 1,
+  auto = FALSE,
+  label.latent = FALSE,
+  output_dir = ""
+)
 }
 \arguments{
 \item{df}{Dataframe representing symptom severity/frequency}
@@ -15,6 +22,12 @@ perform_uva(df, reduce = FALSE, scale = 1, output_dir = "")
 \item{scale}{The scale on which symptom severity/frequency is measured.
 For example if symptoms are measured on a 0-10 scale, scale = 10.
 (default: 1) (only applicable if reduce = TRUE)}
+
+\item{auto}{Boolean. Should redundancy reduction be automated?
+Defaults to FALSE for manual selection.}
+
+\item{label.latent}{Boolean. Should latent variables be manually labelled?
+Defaults to TRUE. Set to FALSE for arbitrary labelling (i.e., "LV_").}
 
 \item{output_dir}{Directory in which the .RDS and .csv outputs of UVA should
 be saved (only applicable if reduce = TRUE) (defaults to current directory)}
