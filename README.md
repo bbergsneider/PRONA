@@ -8,4 +8,4 @@ library(devtools)
 devtools::install_github("bbergsneider/PRONA")
 ```
 
-See the [PRONA introduction vignette](file:///Users/brandonbergs/Documents/Research/NIH/PRONA/vignettes/introduction.html) for how to use PRONA.
+See the [PRONA introduction vignette](http://htmlpreview.github.io/?https://github.com/bbergsneider/PRONA/blob/main/vignettes/introduction.html) for how to use PRONA.
