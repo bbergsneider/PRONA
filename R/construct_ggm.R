@@ -49,6 +49,7 @@ plot_ggm <- function(ega, colors = NULL, legend.names = NULL) {
             ega_plot <- plot(ega, plot.args = list(node.size = 8, label.size = 3.5, color.palette = colors, legend.names = legend.names))
         }
     }
+    return(ega_plot)
 }
 
 

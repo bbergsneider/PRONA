@@ -15,7 +15,7 @@ If false, conducts a non-paranormal transformation (Default: FALSE)}
 \item{iter}{Number of permutations for bootstrap analysis (Default: 10,000)}
 }
 \value{
-The outboot of the BootEGA function from EGAnet
+The output of the BootEGA function from EGAnet
 }
 \description{
 This function analyzes symptom cluster stability using the boot.ega function

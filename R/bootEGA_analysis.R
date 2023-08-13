@@ -7,7 +7,7 @@
 #' @param normal Whether to consider all variables normally distrubted.
 #' If false, conducts a non-paranormal transformation (Default: FALSE)
 #' @param iter Number of permutations for bootstrap analysis (Default: 10,000)
-#' @return The outboot of the BootEGA function from EGAnet
+#' @return The output of the BootEGA function from EGAnet
 #' @export
 
 run_bootEGA <- function(df, normal = FALSE, iter = 10000) {
