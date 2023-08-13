@@ -15,7 +15,7 @@ construct_ggm <- function(df, normal = FALSE) {
     df <- dplyr::select(df, -ID) # Remove ID column
 
     # Calculate correlation matrix
-    cor_matrix <- qgraph::cor_auto(df, detectOrdinal = FALSE, npn.SKEPTIC = normal, forcePD = TRUE)
+    cor_matrix <- qgraph::cor_auto(df, detectOrdinal = FALSE, npn.SKEPTIC = !normal, forcePD = TRUE)
 
     # Construct an EBIC-GLASSO regularized GGM using the EGA function from EGAnet
     # EGA also identifies symptom clusters using the walktrap algorithm
@@ -30,11 +30,25 @@ construct_ggm <- function(df, normal = FALSE) {
 #' This function takes the output from construct_ggm and plots it
 #'
 #' @param ega Output from construct_ggm
+#' @param colors A list of colors to color the clusters with (optional)
+#' @param legend.names A list of strings to label the clusters with (optional)
 #' @return A plot of the GGM
 #' @export
 
-plot_ggm <- function(ega) {
-    ega_plot <- plot(ega, plot.args = list(node.size = 8, label.size = 3.5))
+plot_ggm <- function(ega, colors = NULL, legend.names = NULL) {
+    if (is.null(colors)) {
+        if (is.null(legend.names)) {
+            ega_plot <- plot(ega, plot.args = list(node.size = 8, label.size = 3.5))
+        } else {
+            ega_plot <- plot(ega, plot.args = list(node.size = 8, label.size = 3.5, legend.names = legend.names))
+        }
+    } else {
+        if (is.null(legend.names)) {
+            ega_plot <- plot(ega, plot.args = list(node.size = 8, label.size = 3.5, color.palette = colors))
+        } else {
+            ega_plot <- plot(ega, plot.args = list(node.size = 8, label.size = 3.5, color.palette = colors, legend.names = legend.names))
+        }
+    }
     return(ega_plot)
 }
 

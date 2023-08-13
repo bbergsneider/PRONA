@@ -4,10 +4,14 @@
 \alias{plot_ggm}
 \title{Plot a GGM}
 \usage{
-plot_ggm(ega)
+plot_ggm(ega, colors = NULL, legend.names = NULL)
 }
 \arguments{
 \item{ega}{Output from construct_ggm}
+
+\item{colors}{A list of colors to color the clusters with (optional)}
+
+\item{legend.names}{A list of strings to label the clusters with (optional)}
 }
 \value{
 A plot of the GGM
