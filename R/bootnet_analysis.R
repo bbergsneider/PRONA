@@ -9,13 +9,10 @@
 #' @export
 
 network_estimation_fun_normal <- function(df) {
-  check_data_format(df) # Check if df is formatted properly
-  df <- dplyr::select(df, -ID) # Remove ID column
-
   # Calculate correlation matrix
   cor_matrix <- qgraph::cor_auto(df, detectOrdinal=FALSE, forcePD=TRUE, npn.SKEPTIC = FALSE)
-  # Perform EBIC glasso
-  EBIC_matrix <- qgraph::EBICglasso(cor_matrix, nrow(df), 0.5)
+  # Perform EBIC glasso with gamma = 0
+  EBIC_matrix <- qgraph::EBICglasso(cor_matrix, nrow(df), 0)
 
   return(EBIC_matrix)
 }
@@ -31,13 +28,10 @@ network_estimation_fun_normal <- function(df) {
 #' @export
 
 network_estimation_fun_non_normal <- function(df) {
-  check_data_format(df) # Check if df is formatted properly
-  df <- dplyr::select(df, -ID) # Remove ID column
-
   # Calculate correlation matrix
   cor_matrix <- qgraph::cor_auto(df, detectOrdinal=FALSE, forcePD=TRUE, npn.SKEPTIC = TRUE)
-  # Perform EBIC glasso
-  EBIC_matrix <- qgraph::EBICglasso(cor_matrix, nrow(df), 0.5)
+  # Perform EBIC glasso with gamma = 0
+  EBIC_matrix <- qgraph::EBICglasso(cor_matrix, nrow(df), 0)
 
   return(EBIC_matrix)
 }
@@ -62,6 +56,9 @@ network_estimation_fun_non_normal <- function(df) {
 #' @export
 
 nonparam_boot <- function(df, normal = FALSE, nBoots = 2500, statistics = c('edge','strength','closeness','betweenness'), communities = NULL) {
+    check_data_format(df) # Check if df is formatted properly
+    df <- dplyr::select(df, -ID) # Remove ID column
+    
     if (normal) {
         nonparam.boot <-bootnet::bootnet(df, nBoots=nBoots, statistics=statistics, fun='network_estimation_fun_normal', communities=communities)
     } else {
@@ -81,6 +78,9 @@ nonparam_boot <- function(df, normal = FALSE, nBoots = 2500, statistics = c('edg
 #' @export
 
 plot_nonparam_boot <- function(nonparam.boot) {
+    red="#e4211c"
+    blue="#387db8"
+    
     p <- plot(nonparam.boot, labels = FALSE, order = "sample", sampleColor=red, bootColor=blue, meanColor=blue, meanlwd=0.4, bootAlpha=0.2, bootlwd=0.4, areaAlpha=0.5)
     pp <- p +
     ggplot2::theme_minimal() +
@@ -129,6 +129,9 @@ summarize_nonparam_boot <- function(nonparam.boot) {
 #' @export
 
 casedrop_boot <- function(df, normal = FALSE, nBoots = 2500, statistics = c('edge','strength','closeness','betweenness'), communities = NULL) {
+    check_data_format(df) # Check if df is formatted properly
+    df <- dplyr::select(df, -ID) # Remove ID column
+    
     if (normal) {
         casedrop.boot <-bootnet::bootnet(df, nBoots=nBoots, type="case", statistics=statistics, fun='network_estimation_fun_normal', communities=communities)
     } else {
@@ -220,6 +223,9 @@ cor_stability_analysis <- function(casedrop.boot) {
 #' @export
 
 nodedrop_boot <- function(df, normal = FALSE, nBoots = 2500, statistics = c('edge','strength','closeness','betweenness')) {
+    check_data_format(df) # Check if df is formatted properly
+    df <- dplyr::select(df, -ID) # Remove ID column
+    
     if (normal) {
         nodedrop.boot <-bootnet::bootnet(df, nBoots=nBoots, type="node", statistics=statistics, fun='network_estimation_fun_normal')
     } else {
