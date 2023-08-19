@@ -125,8 +125,13 @@ get_community_summary <- function(data) {
 
     # Make dataframe summarizing mean, median, and 95% CI of each variable in each community
     severity_summary_df <- all_comms_long_symptom_data %>%
-        dplyr::group_by(community,variable) %>%
-        dplyr::summarize(mean=mean(value), median=median(value), upper = mean + 1.96 * sd(value)/sqrt(length(value)), lower = mean - 1.96 * sd(value)/sqrt(length(value)))
+        dplyr::group_by(community, variable) %>%
+        dplyr::summarize(
+        mean = mean(value, na.rm = TRUE),
+        median = median(value, na.rm = TRUE),
+        upper = mean + 1.96 * sd(value, na.rm = TRUE)/sqrt(sum(!is.na(value))),
+        lower = mean - 1.96 * sd(value, na.rm = TRUE)/sqrt(sum(!is.na(value)))
+        )
 
     return(severity_summary_df)
 }
@@ -160,14 +165,17 @@ community_line_plot <- function(data, communities = c(0)) {
         all_comms_long_symptom_data <- reshape2::melt(data %>% dplyr::select(-ID), id='community')
         combined_severity_summary_df <- all_comms_long_symptom_data %>%
             dplyr::group_by(variable) %>%
-            dplyr::summarize(mean=mean(value), median=median(value), upper = mean + 1.96 * sd(value)/sqrt(length(value)), lower = mean - 1.96 * sd(value)/sqrt(length(value)))
+            dplyr::summarize(
+            mean = mean(value, na.rm = TRUE),
+            median = median(value, na.rm = TRUE),
+            upper = mean + 1.96 * sd(value, na.rm = TRUE)/sqrt(sum(!is.na(value))),
+            lower = mean - 1.96 * sd(value, na.rm = TRUE)/sqrt(sum(!is.na(value)))
+            )
         combined_severity_summary_df <- cbind(community=0,combined_severity_summary_df)
         summary_df <- rbind(combined_severity_summary_df, summary_df)
     }
 
     # Make plot
-    # TODO: Change font size
-    # TODO: Trouble shoot error (why is it dropping a column?)
     p <- ggplot2::ggplot(summary_df[summary_df$community %in% communities,], ggplot2::aes(x = factor(variable, level=col_order), y = mean, colour = factor(community), group = factor(community))) + 
         ggplot2::geom_line(size=1) +
         ggplot2::geom_point(ggplot2::aes(shape = factor(community)), size = 3) +
@@ -175,11 +183,10 @@ community_line_plot <- function(data, communities = c(0)) {
         ggplot2::theme_classic() +
         ggplot2::scale_color_discrete(labels = communities) +
         ggplot2::scale_shape_discrete(labels = communities) +
-        ggplot2::theme(legend.position = "bottom", text = ggplot2::element_text(size = 12)) +
+        ggplot2::theme(legend.position = "bottom", text = ggplot2::element_text(size = 6)) +
         ggplot2::labs(x = "Symptom", y = "Severity") +
         ggplot2::theme(axis.text.x=ggplot2::element_text(angle = 60,vjust=1,hjust=1)) +
-        ggplot2::theme(axis.text = ggplot2::element_text(size = 12), legend.text = ggplot2::element_text(size = 12)) +
-        ggplot2::ylim(0,2) # TODO: Edit this so that scale adjusts depending on dataset (could just delete this line?)
+        ggplot2::theme(axis.text = ggplot2::element_text(size = 6), legend.text = ggplot2::element_text(size = 6))
     
     return(p)
 }
@@ -197,7 +204,7 @@ community_line_plot <- function(data, communities = c(0)) {
 #'
 order_cols_by_mean <- function(df){
   # calculate mean of each column
-  mean_cols <- colMeans(df)
+  mean_cols <- colMeans(df, na.rm = TRUE)
   
   # sort column means in descending order
   mean_cols <- sort(mean_cols, decreasing = FALSE)
