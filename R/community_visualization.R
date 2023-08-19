@@ -183,10 +183,10 @@ community_line_plot <- function(data, communities = c(0)) {
         ggplot2::theme_classic() +
         ggplot2::scale_color_discrete(labels = communities) +
         ggplot2::scale_shape_discrete(labels = communities) +
-        ggplot2::theme(legend.position = "bottom", text = ggplot2::element_text(size = 6)) +
+        ggplot2::theme(legend.position = "bottom", text = ggplot2::element_text(size = 8)) +
         ggplot2::labs(x = "Symptom", y = "Severity") +
         ggplot2::theme(axis.text.x=ggplot2::element_text(angle = 60,vjust=1,hjust=1)) +
-        ggplot2::theme(axis.text = ggplot2::element_text(size = 6), legend.text = ggplot2::element_text(size = 6))
+        ggplot2::theme(axis.text = ggplot2::element_text(size = 8), legend.text = ggplot2::element_text(size = 8))
     
     return(p)
 }
