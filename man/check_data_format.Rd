@@ -18,5 +18,6 @@ Requirements include:
 \enumerate{
 \item First column must be named 'ID'
 \item All remaining columns must be numerical values
+\item There must not be any NA values in the dataframe
 }
 }
