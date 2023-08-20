@@ -35,7 +35,7 @@ library(PRONA)
 ```
 
 Next, let's load a dataset to analyze. In order to be analyzed with
-PRONA, data must be in a .csv file formatted with the following
+PRONA, data must be in a dataframe formatted with the following
 specifications:
 
 -   Each row should represent a single patient.
@@ -99,58 +99,67 @@ identifying redundant variables in a network by assessing their
 topological overlap and consolidating them into a single underlying
 variable using the Maximum Likelihood with Robust standard errors
 estimate. For more details on UVA, see [Chrisensen Garrido & Golino,
-PsyArXiv](https://psyarxiv.com/4kra2/).
+Multivariate Behavioral Research,
+2023](https://doi.org/10.1080/00273171.2023.2194606).
 
-We have implemented UVA in PRONA through the perform_uva function.
-perform_uva has six parameters:
+We have implemented UVA in PRONA through the calculate_wTO, plot_wTO,
+and perform_uva_consolidation functions.
+
+First, we will calculate and plot the weighted topological overlap (wTO)
+for the top 20 variable pairs:
+
+```{r}
+wTO_results <- calculate_wTO(df)
+```
+
+```{r, fig.width=9, fig.height=5}
+plot_wTO(wTO_results)
+```
+
+Next, we will consolidate redundant variables. The default wTO threshold
+for considering variable pairs as potentially redundant is 0.25, but
+other factors should also be considered when choosing this threshold
+such as (1) whether the variables are at the extreme high or low ends of
+severity/frequency/occurrence (variables at the extremes of
+severity/frequency/occurrence can tend to exhibit false correlations
+with other variables due to their limited variance) AND (2) whether the
+variables have considerable conceptual overlap. In this example, the top
+two variables pairs with the highest wTO
+(BEING.JUMPY.OR.EASILY.STARTLED-BEING.OVER.ALERT and
+UPSET.WHEN.REMINDED.OF.TRAUMA-UPSETTING.THOUGHTS.OR.IMAGES) seem to have
+considerable conceptual overlap, but the third variable pair
+(DISTANT.OR.CUT.OFF.FROM.PEOPLE-LESS.INTEREST.IN.ACTIVITIES) has less
+conceptual overlap, so we will set a cutoff threshold of 0.275 to only
+consolidate the top two variable pairs.
+
+The parameters for the perform_uva_consolidation function are:
 
 -   df: A dataframe representing symptom severity/frequency
-
--   reduce: Boolean. Should redundancy reduction be performed? If FALSE
-    (default), only redundancy analysis is performed and not variable
-    reduction. Running perform_uva without reduction first is
-    recommended to help determine which variables to consolidate.
 
 -   scale: The scale on which symptom severity/frequency is measured. In
     our case, PTSD frequency is measured on a 0-3 scale, so scale = 3.
     To give another example, if your data is measured on a 0-10 scale,
     then scale = 10.
 
--   auto: Boolean. Should redundancy reduction be automated? Defaults to
-    FALSE for manual selection.
+-   cut.off: The cut-off used to determine when paiwise wTO values are
+    considered redundant. Must be between 0 and 1. (Default: 0.25)
 
--   label.latent Boolean. Should latent variables be manually labelled?
-    Defaults to TRUE. Set to FALSE for arbitrary labeling (i.e., "LV\_")
+-   reduce.method: Method used to reduce redundancies. Available options
+    include "latent", "mean", "remove", and "sum." See Christensen et
+    al. for more details. We recommend using "latent" and have set it as
+    the default.
+
+-   new.names: Vector of new names to give to consolidated variables.
+    Variable pairs will be renamed in descending order of wTO. If this
+    vector is not given, new variable pairs will be renamed "CV1",
+    "CV2", etc\... Moreover, if reduce.method = "remove", this vector
+    will not be used. (Default: NULL)
 
 -   output_dir: The directory in which the .RDS and .csv outputs of
-    perform_uva should be saved (only applicable if reduce = TRUE)
-
-Let's first perform UVA without variable reduction and plot the weighted
-topological overlap (wTO) for the top 20 variable pairs:
+    perform_uva should be saved.
 
 ```{r}
-uva_results1 <- perform_uva(df)
-```
-
-```{r, fig.width=9, fig.height=5}
-plot_wTO(uva_results1)
-```
-
-The default wTO threshold for considering variable pairs as potentially
-redundant is 0.25, but other factors should also be considered before
-consolidating variables such as (1) whether the variables are at the
-extreme high or low ends of severity/frequency/occurrence (variables at
-the extremes of severity/frequency/occurrence can tend to exhibit false
-correlations with other variables due to their limited variance) AND (2)
-whether the variables have considerable conceptual overlap. For the sake
-of convenience, we are consolidating all variable pairs with wTO \> 0.25
-and giving them arbitrary names by setting the perform_uva parameters
-auto=TRUE and label.latent=FALSE; however, we suggest keeping these
-parameters at their default values to manually choose and label which
-variables to consolidate.
-
-```{r}
-uva_results2 <- perform_uva(df, reduce = TRUE, scale = 3, auto = TRUE, label.latent = FALSE, output_dir = '../test_scripts/output')
+uva_results <- perform_uva_consolidation(df, scale = 3, cut.off = 0.275, reduce.method = "latent", new.names = c('JUMPY.STARTLED.OVER.ALERT', 'UPSETTING.REMINDERS'), output_dir = '../../PRONA_additional_files/test_scripts/output')
 ```
 
 perform_uva saves the reduced data in a .csv file titled
@@ -158,7 +167,7 @@ perform_uva saves the reduced data in a .csv file titled
 frequency and occurrence distributions:
 
 ```{r}
-reduced_df <- read.csv('../test_scripts/output/reduced_data.csv', stringsAsFactors = FALSE)
+reduced_df <- read.csv('../../PRONA_additional_files/test_scripts/output/reduced_data.csv', stringsAsFactors = FALSE)
 ```
 
 ```{r, fig.width=7, fig.height=5}
@@ -168,12 +177,6 @@ plot_frequency(reduced_df)
 ```{r, fig.width=7, fig.height=5}
 plot_occurrence(reduced_df)
 ```
-
-For reference, LV_1 represents the consolidation of BEING JUMPY OR
-EASILY STARTLED and BEING OVER ALERT. LV_2 represents the consolidation
-of DISTANT OR CUT OFF FROM PEOPLE and LESS INTEREST IN ACTIVITIES. LV_3
-represents the consolidation of UPSET WHEN REMINDED OF TRAUMA and
-UPSETTING THOUGHTS OR IMAGES.
 
 ### 4. Check variable normality
 
@@ -205,8 +208,8 @@ through the walktrap algorithm:
 ptsd_network <- construct_ggm(reduced_df, normal = FALSE)
 ```
 
-```{r, fig.width=7, fig.height=5}
-ptsd_network_plot <- plot_ggm(ptsd_network)
+```{r, fig.width=9, fig.height=6}
+plot_ggm(ptsd_network)
 ```
 
 ```{r}
