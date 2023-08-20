@@ -29,7 +29,8 @@ Imports:
     igraph (>= 1.5.1),
     tibble (>= 3.2.1),
     ComplexHeatmap (>= 2.14.0),
-    circlize (>= 0.4.15)
+    circlize (>= 0.4.15),
+    NetworkComparisonTest (>= 2.2.1)
 Suggests: 
     knitr,
     rmarkdown
