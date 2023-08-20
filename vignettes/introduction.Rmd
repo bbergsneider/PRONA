@@ -182,7 +182,7 @@ plot_occurrence(reduced_df)
 
 Before constructing a network, all variables should be checked for
 whether they are normally distributed. If they are not normally
-distributed, they will need to be passed through a nonparanormal
+distributed, they should be passed through a nonparanormal
 transformation before network construction. To check if symptoms are
 normally distributed, we use the Shapiro-Wilk normality test. A p-value
 of \< 0.05 in the Shapiro-Wilk normality test suggests that the variable
