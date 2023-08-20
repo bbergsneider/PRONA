@@ -1,0 +1,169 @@
+---
+title: "How to analyze the accuracy and stability of a network using PRONA"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{introduction}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+This vignette gives an overview of how to perform item stability
+analysis, nonparametric bootstrapping, casedrop bootstrapping, and
+nodedrop bootstrapping on a GGM network generated with PRONA. For
+running these analyses, PRONA largely serves as a wrapper for the
+[EGANet](https://github.com/hfgolino/EGAnet) and
+[bootnet](https://github.com/SachaEpskamp/bootnet) packages. For more
+information on these analyses and how to interpret their results, please
+see [Christensen & Golino, Psych,
+2021](https://doi.org/10.3390/psych3030032) and [Epskamp, Borsboom, &
+Fried, Behavioral Research Methods,
+2018](https://pubmed.ncbi.nlm.nih.gov/28342071/).
+
+### 1. Load PRONA, download data, and construct a GGM
+
+For this example, we will use the data from the introduction vignette to
+construct a GGM. Please refer to the introduction vignette for more
+details on where this data is from and how the network is constructed.
+
+```{r}
+library(PRONA)
+reduced_df <- read.csv('../../PRONA_additional_files/test_scripts/output/reduced_data.csv', stringsAsFactors = FALSE)
+ptsd_network <- construct_ggm(reduced_df, normal = FALSE)
+```
+
+```{r, fig.height=6, fig.width=9}
+plot_ggm(ptsd_network)
+```
+
+### 2. Perform Item Stability Analysis
+
+To perform item stability analysis, we use the run_bootEGA function.
+This function has 3 parameters:
+
+-   df: A dataframe of symptom severity/frequency data
+
+-   normal: Whether to consider all variables normally distributed. If
+    false, conducts a non-paranormal transformation (Default: FALSE)
+
+-   iter: Number of permutations to run for bootstrapping analysis
+    (Default: 10,000)
+
+```{r, results='hide'}
+# Replace file path with wherever you want to save the results of bootEGA
+boot.ega.file <- "../../PRONA_additional_files/test_scripts/output/boot.ega.RDS"
+if (!file.exists(boot.ega.file)){
+  boot.ega <- run_bootEGA(reduced_df)
+  saveRDS(boot.ega, boot.ega.file)}
+boot.ega <- readRDS(boot.ega.file)
+```
+
+Let's plot the median network structure from bootEGA.
+
+```{r}
+plot_bootEGA(boot.ega)
+```
+
+Next, we calculate item and dimension stability and plot the results
+
+```{r, results='hide'}
+dimStab <- calculate_dimStab(boot.ega)
+```
+
+```{r}
+plot_item_stability(dimStab)
+```
+
+### 3. Perform nonparametric bootstrapping to analyze edge weight accuracy
+
+To perform nonparametric bootstrapping, we use the nonparam_boot
+function, which has five parameters:
+
+-   df: A dataframe of symptom severity/frequency data
+
+-   normal: Whether to consider all variables normally distributed. If
+    false, conducts a non-paranormal transformation (Default: FALSE)
+
+-   nBoots: Number of permutations to run for bootstrapping analysis
+    (Default: 2,500)
+
+-   statistics: Vector indicating which statistics to store. See bootnet
+    for options. (Default:
+    c('edge','strength','closeness','betweenness')
+
+-   communities: If you are running bootnet on bridge centrality
+    measures, use this parameter to set community labels (set this to
+    ega\$wc, where ega is the output from the construct_ggm function).
+
+```{r, results='hide'}
+nonparam.boot.file <- "../../PRONA_additional_files/test_scripts/output/nonparam.boot.RDS"
+if (!file.exists(nonparam.boot.file)){
+  nonparam.boot <- nonparam_boot(reduced_df, normal = FALSE, statistics = c('edge','strength','closeness','betweenness','bridgeStrength','bridgeCloseness','bridgeBetweenness'), communities = ptsd_network$wc)
+  saveRDS(nonparam.boot, nonparam.boot.file)}
+nonparam.boot <- readRDS(nonparam.boot.file)
+```
+
+Let's plot and summarize the results.
+
+```{r}
+plot_nonparam_boot(nonparam.boot)
+```
+
+```{r}
+summarize_nonparam_boot(nonparam.boot)
+```
+
+### 4. Perform casedrop and nodedrop bootstrapping to analyze edge weight and centrality stability
+
+To perform casedrop bootstrapping, we use the casedrop_boot function,
+which has the same five parameters as the nonparam_boot function.
+
+```{r, results='hide'}
+casedrop.boot.file <- "../../PRONA_additional_files/test_scripts/output/casedrop.boot.RDS"
+if (!file.exists(casedrop.boot.file)){
+  casedrop.boot <- casedrop_boot(reduced_df, normal = FALSE, statistics = c('edge','strength','closeness','betweenness','bridgeStrength','bridgeCloseness','bridgeBetweenness'), communities = ptsd_network$wc)
+  saveRDS(casedrop.boot, casedrop.boot.file)}
+casedrop.boot <- readRDS(casedrop.boot.file)
+```
+
+Plot the casedrop bootstrapping results for edge weight, centralities,
+and bridge centralities
+
+```{r}
+plot_casedrop_boot(casedrop.boot, type = "edge")
+```
+
+```{r}
+plot_casedrop_boot(casedrop.boot, type = "centralities")
+```
+
+```{r}
+plot_casedrop_boot(casedrop.boot, type = "bridge centralities")
+```
+
+Next, we perform correlation stability analysis on the casedrop
+bootstrapping results.
+
+```{r}
+cor_stability_analysis(casedrop.boot)
+```
+
+Finally, let's perform nodedrop bootstrapping and plot the results.
+
+```{r, results='hide'}
+nodedrop.boot.file <- "../../PRONA_additional_files/test_scripts/output/nodedrop.boot.RDS"
+if (!file.exists(nodedrop.boot.file)){
+  nodedrop.boot <- nodedrop_boot(reduced_df, normal = FALSE, statistics = c('edge','strength','closeness','betweenness'))
+  saveRDS(nodedrop.boot, nodedrop.boot.file)}
+nodedrop.boot <- readRDS(nodedrop.boot.file)
+```
+
+```{r}
+plot_nodedrop_boot(nodedrop.boot, type = 'edge')
+```
+
+```{r}
+plot_nodedrop_boot(nodedrop.boot, type = 'centralities')
+```
