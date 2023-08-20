@@ -15,7 +15,7 @@ construct_ggm <- function(df, normal = FALSE) {
     df <- dplyr::select(df, -ID) # Remove ID column
 
     # Calculate correlation matrix
-    cor_matrix <- qgraph::cor_auto(df, detectOrdinal = TRUE, npn.SKEPTIC = !normal, forcePD = TRUE)
+    cor_matrix <- qgraph::cor_auto(df, detectOrdinal = FALSE, npn.SKEPTIC = !normal, forcePD = TRUE)
 
     # Construct an EBIC-GLASSO regularized GGM using the EGA function from EGAnet
     # EGA also identifies symptom clusters using the walktrap algorithm
