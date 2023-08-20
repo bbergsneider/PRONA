@@ -29,11 +29,20 @@ format_ptsd_data <- function(FullData){
         dplyr::select(USUBJID,QSTEST,QSORRES) %>%
         tidyr::spread(QSTEST, QSORRES) %>%
         dplyr::rename("ID" = "USUBJID") %>%
-        dplyr::mutate_each(dplyr::funs(replace(.,.=="NOT ANSWERED",NA))) %>%
-        dplyr::mutate_each(dplyr::funs(replace(.,.=="NOT AT ALL",0))) %>%
-        dplyr::mutate_each(dplyr::funs(replace(.,.=="ONCE A WEEK",1))) %>%
-        dplyr::mutate_each(dplyr::funs(replace(.,.=="2-4 TIMES PER WEEK/HALF THE TIME",2))) %>%
-        dplyr::mutate_each(dplyr::funs(replace(.,.=="5 OR MORE TIMES PER WEEK/ALMOST ALWAYS",3)))
+        dplyr::mutate(dplyr::across(-ID, ~ replace(.,.=="NOT ANSWERED",NA))) %>%
+        dplyr::mutate(dplyr::across(-ID, ~ replace(.,.=="NOT AT ALL",0))) %>%
+        dplyr::mutate(dplyr::across(-ID, ~ replace(.,.=="ONCE A WEEK",1))) %>%
+        dplyr::mutate(dplyr::across(-ID, ~ replace(.,.=="2-4 TIMES PER WEEK/HALF THE TIME",2))) %>%
+        dplyr::mutate(dplyr::across(-ID, ~ replace(.,.=="5 OR MORE TIMES PER WEEK/ALMOST ALWAYS",3)))
+
+    # Convert all columns except 'ID' to numeric
+    Data[-1] <- lapply(Data[-1], as.numeric)
+
+    # Change column names
+    # Remove "FREQUENCY " from the beginning of the column names
+    colnames(Data)[-1] <- gsub("^FREQUENCY ", "", colnames(Data)[-1])
+    # Replace all spaces with a dot
+    colnames(Data)[-1] <- gsub(" ", ".", colnames(Data)[-1])
 
     return(Data)
 }

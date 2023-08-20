@@ -46,17 +46,12 @@ specifications:
 -   The remaining columns should represent symptoms, be named after the
     symptom, and must contain numerical values.
 
+-   There should not be any NA values in the dataframe.
+
 For this example, we will analyze publicly-available data on the
 frequency of Post-traumatic stress disorder (PTSD) among female drug
-users. We have already formatted the data to the format required by
-PRONA and included it in the package installation:
-
-```{r}
-df <- read.csv(system.file('extdata','qs_formatted.csv', package='PRONA'), stringsAsFactors = FALSE)
-```
-
-If you are interested in working with the original data, go to the [NIH
-National Institute on Drug Abuse Data Share
+users. To access this data and run through this tutorial yourself,
+please go to the [NIH National Institute on Drug Abuse Data Share
 Website](https://datashare.nida.nih.gov/study/nida-ctn-0015), click on
 "CTN-0015 Data Files", fill out the required data sharing agreement, and
 navigate to the file titled "qs.csv". To format the data to the proper
@@ -64,6 +59,21 @@ PRONA format, use the function format_ptsd_data(). The idea for using
 this dataset as an example and the code for formatting it properly is
 adapted from [Epskamp Borsboom & Fried, Behavioral Research Methods,
 2018](https://pubmed.ncbi.nlm.nih.gov/28342071/).
+
+```{r}
+# Replace this filepath with where you downloaded the qs.csv file
+df <- read.csv('../../PRONA_additional_files/original_data/qs.csv', stringsAsFactors = FALSE)
+df <- format_ptsd_data(df)
+```
+
+PRONA requires that dataframes have no NA values in them, so we will
+check if this dataframe has any NA values and then replace any NA values
+with 0.
+
+```{r}
+print(any(is.na(df)))
+df <- replace(df, is.na(df), 0)
+```
 
 ### 2. Plot the frequency and occurrence of all symptoms
 
@@ -80,37 +90,40 @@ plot_occurrence(df)
 
 ### 3. Unique Variable Analysis
 
-When working with PRO data, oftentimes some of the symptom measurements may
-overlap with one another and actually capture the same underlying latent
-variable. Overlapping symptoms can skew network structure, network centrality
-measurements, and symptom clustering. To avoid this, we can use Unique Variable Analysis (UVA),
-which is a method for identifying redundant variables in a network by assessing
-their topological overlap and consolidating them into a single underlying
-using the Maximum Likelihood with Robust standard errors estimate. For more
-details on UVA, see [Chrisensen Garrido & Golino, PsyArXiv](https://psyarxiv.com/4kra2/).
+When working with PRO data, oftentimes some of the symptom measurements
+may overlap with one another and actually capture the same underlying
+latent variable. Overlapping symptoms can skew network structure,
+network centrality measurements, and symptom clustering. To avoid this,
+we can use Unique Variable Analysis (UVA), which is a method for
+identifying redundant variables in a network by assessing their
+topological overlap and consolidating them into a single underlying
+variable using the Maximum Likelihood with Robust standard errors
+estimate. For more details on UVA, see [Chrisensen Garrido & Golino,
+PsyArXiv](https://psyarxiv.com/4kra2/).
 
-We have implemented UVA in PRONA through the perform_uva function. perform_uva
-has six parameters:
+We have implemented UVA in PRONA through the perform_uva function.
+perform_uva has six parameters:
 
-* df: A dataframe representing symptom severity/frequency
+-   df: A dataframe representing symptom severity/frequency
 
-* reduce: Boolean. Should redundancy reduction be performed? If FALSE (default),
-only redundancy analysis is performed and not variable reduction. Running
-perform_uva without reduction first is recommended to help determine which
-variables to consolidate.
+-   reduce: Boolean. Should redundancy reduction be performed? If FALSE
+    (default), only redundancy analysis is performed and not variable
+    reduction. Running perform_uva without reduction first is
+    recommended to help determine which variables to consolidate.
 
-* scale: The scale on which symptom severity/frequency is measured. In our case,
-PTSD frequency is measured on a 0-3 scale, so scale = 3. To give another example,
-if your data is measured on a 0-10 scale, then scale = 10.
+-   scale: The scale on which symptom severity/frequency is measured. In
+    our case, PTSD frequency is measured on a 0-3 scale, so scale = 3.
+    To give another example, if your data is measured on a 0-10 scale,
+    then scale = 10.
 
-* auto: Boolean. Should redundancy reduction be automated? Defaults to FALSE
-for manual selection.
+-   auto: Boolean. Should redundancy reduction be automated? Defaults to
+    FALSE for manual selection.
 
-* label.latent Boolean. Should latent variables be manually labelled? Defaults to TRUE.
-Set to FALSE for arbitrary labelling (i.e., "LV_")
+-   label.latent Boolean. Should latent variables be manually labelled?
+    Defaults to TRUE. Set to FALSE for arbitrary labeling (i.e., "LV\_")
 
-* output_dir: The directory in which the .RDS and .csv outputs of perform_uva
-should be saved (only applicable if reduce = TRUE)
+-   output_dir: The directory in which the .RDS and .csv outputs of
+    perform_uva should be saved (only applicable if reduce = TRUE)
 
 Let's first perform UVA without variable reduction and plot the weighted
 topological overlap (wTO) for the top 20 variable pairs:
@@ -123,23 +136,26 @@ uva_results1 <- perform_uva(df)
 plot_wTO(uva_results1)
 ```
 
-The default wTO threshold for considering variable pairs as potentially redundant is
-0.25, but other factors should also be considered before consolidating variables
-such as (1) whether the variables are at the extreme high or low ends of severity/frequency/occurrence
-(variables at the extremes of severity/frequency/occurrence can tend to exhibit
-false correlations with other variables due to their limited variance) AND (2)
-whether the variables have considerable conceptual overlap. For the sake of convenience,
-we are consolidating all variable pairs with wTO > 0.25 and giving them arbitrary names
-by setting the perform_uva parameters auto=TRUE and label.latent=FALSE; however, we
-suggest keeping these parameters at their default values to manually
-choose and label which variables to consolidate.
+The default wTO threshold for considering variable pairs as potentially
+redundant is 0.25, but other factors should also be considered before
+consolidating variables such as (1) whether the variables are at the
+extreme high or low ends of severity/frequency/occurrence (variables at
+the extremes of severity/frequency/occurrence can tend to exhibit false
+correlations with other variables due to their limited variance) AND (2)
+whether the variables have considerable conceptual overlap. For the sake
+of convenience, we are consolidating all variable pairs with wTO \> 0.25
+and giving them arbitrary names by setting the perform_uva parameters
+auto=TRUE and label.latent=FALSE; however, we suggest keeping these
+parameters at their default values to manually choose and label which
+variables to consolidate.
 
 ```{r}
 uva_results2 <- perform_uva(df, reduce = TRUE, scale = 3, auto = TRUE, label.latent = FALSE, output_dir = '../test_scripts/output')
 ```
 
-perform_uva saves the reduced data in a .csv file titled "reduced_data.csv".
-Let's read in this data and look at the new frequency and occurrence distributions:
+perform_uva saves the reduced data in a .csv file titled
+"reduced_data.csv". Let's read in this data and look at the new
+frequency and occurrence distributions:
 
 ```{r}
 reduced_df <- read.csv('../test_scripts/output/reduced_data.csv', stringsAsFactors = FALSE)
@@ -153,19 +169,22 @@ plot_frequency(reduced_df)
 plot_occurrence(reduced_df)
 ```
 
-For reference, LV_1 represents the consolidation of BEING JUMPY OR EASILY STARTLED
-and BEING OVER ALERT. LV_2 represents the consolidation of DISTANT OR CUT OFF FROM PEOPLE and
-LESS INTEREST IN ACTIVITIES. LV_3 represents the consolidation of UPSET WHEN REMINDED OF TRAUMA and
+For reference, LV_1 represents the consolidation of BEING JUMPY OR
+EASILY STARTLED and BEING OVER ALERT. LV_2 represents the consolidation
+of DISTANT OR CUT OFF FROM PEOPLE and LESS INTEREST IN ACTIVITIES. LV_3
+represents the consolidation of UPSET WHEN REMINDED OF TRAUMA and
 UPSETTING THOUGHTS OR IMAGES.
 
 ### 4. Check variable normality
 
-Before constructing a network, all variables should be checked for whether
-they are normally distributed. If they are not normally distributed, they will
-need to be passed through a nonparanormal transformation before network construction.
-To check if symptoms are normally distributed, we use the Shapiro-Wilk normality test.
-A p-value of < 0.05 in the Shapiro-Wilk normality test suggests that the variable is not
-normally distributed. In our dataset, we can see that all variables are non-normally distributed:
+Before constructing a network, all variables should be checked for
+whether they are normally distributed. If they are not normally
+distributed, they will need to be passed through a nonparanormal
+transformation before network construction. To check if symptoms are
+normally distributed, we use the Shapiro-Wilk normality test. A p-value
+of \< 0.05 in the Shapiro-Wilk normality test suggests that the variable
+is not normally distributed. In our dataset, we can see that all
+variables are non-normally distributed:
 
 ```{r, fig.width=7, fig.height=5}
 plot_density(reduced_df)
@@ -178,9 +197,9 @@ check_normality(reduced_df)
 ### 5. Construct a Gaussian Graphical Model Network
 
 Now that we are done with all the pre-processing steps, we can construct
-a Gaussian Graphical Model (GGM) network for our data, assuming all variables
-are non-normally distributed, and determining symptom networks through the walktrap
-algorithm:
+a Gaussian Graphical Model (GGM) network for our data, assuming all
+variables are non-normally distributed, and determining symptom networks
+through the walktrap algorithm:
 
 ```{r}
 ptsd_network <- construct_ggm(reduced_df, normal = FALSE)
@@ -196,8 +215,9 @@ head(get_ggm_weights(ptsd_network))
 
 ### 6. Calculate network centrality measurements
 
-Finally, we can calculate centrality and bridge centrality measurements for the network such as
-strength, closeness, betweenness, and expected influence.
+Finally, we can calculate centrality and bridge centrality measurements
+for the network such as strength, closeness, betweenness, and expected
+influence.
 
 ```{r}
 calculate_centralities(ptsd_network)
@@ -214,5 +234,3 @@ calculate_bridge_centralities(ptsd_network)
 ```{r, fig.width=7, fig.height=5}
 plot_bridge_centralities(ptsd_network)
 ```
-
-
