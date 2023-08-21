@@ -62,17 +62,17 @@ boot.ega <- readRDS(boot.ega.file)
 
 Let's plot the median network structure from bootEGA.
 
-```{r}
+```{r, fig.width=7, fig.height=5}
 plot_bootEGA(boot.ega)
 ```
 
 Next, we calculate item and dimension stability and plot the results
 
-```{r, results='hide'}
+```{r, results='hide', fig.width=7, fig.height=5}
 dimStab <- calculate_dimStab(boot.ega)
 ```
 
-```{r}
+```{r, fig.width=7, fig.height=5}
 plot_item_stability(dimStab)
 ```
 
@@ -107,7 +107,8 @@ nonparam.boot <- readRDS(nonparam.boot.file)
 
 Let's plot and summarize the results.
 
-```{r}
+```{r, fig.width=7, fig.height=5}
+library(bootnet)
 plot_nonparam_boot(nonparam.boot)
 ```
 
@@ -131,15 +132,15 @@ casedrop.boot <- readRDS(casedrop.boot.file)
 Plot the casedrop bootstrapping results for edge weight, centralities,
 and bridge centralities
 
-```{r}
+```{r, fig.width=7, fig.height=5}
 plot_casedrop_boot(casedrop.boot, type = "edge")
 ```
 
-```{r}
+```{r, fig.width=7, fig.height=5}
 plot_casedrop_boot(casedrop.boot, type = "centralities")
 ```
 
-```{r}
+```{r, fig.width=7, fig.height=5}
 plot_casedrop_boot(casedrop.boot, type = "bridge centralities")
 ```
 
@@ -160,10 +161,10 @@ if (!file.exists(nodedrop.boot.file)){
 nodedrop.boot <- readRDS(nodedrop.boot.file)
 ```
 
-```{r}
+```{r, fig.width=7, fig.height=5}
 plot_nodedrop_boot(nodedrop.boot, type = 'edge')
 ```
 
-```{r}
+```{r, fig.width=7, fig.height=5}
 plot_nodedrop_boot(nodedrop.boot, type = 'centralities')
 ```

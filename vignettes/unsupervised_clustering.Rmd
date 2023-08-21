@@ -89,7 +89,7 @@ the plot_community_heatmap function, which has three parameters:
 
 Here, "PC" stands for "Patient Community":
 
-```{r}
+```{r, fig.width=7, fig.height=5}
 plot_community_heatmap(community_df)
 ```
 
@@ -102,7 +102,7 @@ line plots. The community_line_plot function has two parameters:
     include 0 in the vector, it will plot the severity for all patients
     combined. (Default: c(0))
 
-```{r}
+```{r, fig.width=7, fig.height=5}
 community_line_plot(community_df, c(0,1,2))
 ```
 
@@ -131,7 +131,7 @@ comm2_df <- community_df[community_df$community==2,] %>% select(-community)
 comm1_ega <- construct_ggm(comm1_df, normal = FALSE)
 ```
 
-```{r}
+```{r, fig.width=7, fig.height=5}
 plot_ggm(comm1_ega)
 ```
 
@@ -139,7 +139,7 @@ plot_ggm(comm1_ega)
 comm2_ega <- construct_ggm(comm2_df, normal = FALSE)
 ```
 
-```{r}
+```{r, fig.width=7, fig.height=5}
 plot_ggm(comm2_ega)
 ```
 
@@ -193,11 +193,12 @@ nct.results <- readRDS(nct.file)
 We can plot the results of the NCT comparing global network strength and
 overall network structure.
 
-```{r}
+```{r, fig.width=7, fig.height=5}
+library(NetworkComparisonTest)
 plot_NCT(nct.results, what = "strength")
 ```
 
-```{r}
+```{r, fig.width=7, fig.height=5}
 plot_NCT(nct.results, what = "network")
 ```
 
