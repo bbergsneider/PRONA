@@ -114,7 +114,7 @@ median, upper bound, and lower bound of each symptom in each community.
 get_community_summary(community_df)
 ```
 
-### 3. Construct networks for individual communities 
+### 3. Construct networks for individual communities
 
 We can construct GGM networks and conduct statistical assessment for
 individual communities using the same pipeline as described in the
