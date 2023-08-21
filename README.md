@@ -8,4 +8,7 @@ library(devtools)
 devtools::install_github("bbergsneider/PRONA")
 ```
 
-See the [PRONA introduction vignette](http://htmlpreview.github.io/?https://github.com/bbergsneider/PRONA/blob/main/vignettes/introduction.html) for how to use PRONA.
+For how to use PRONA, please follow these vignettes:
+1. [Introduction](https://rpubs.com/brandonbergs/prona-introduction)
+2. [Network accuracy and stability assessment](https://rpubs.com/brandonbergs/prona-statistical-assessment)
+3. [Concordance-based clustering of patient communities](https://rpubs.com/brandonbergs/prona-unsupervised-clustering)
