@@ -4,7 +4,7 @@
 \alias{plot_ggm}
 \title{Plot a GGM}
 \usage{
-plot_ggm(ega, colors = NULL, legend.names = NULL)
+plot_ggm(ega, colors = NULL, legend.names = NULL, label.size = 3.5)
 }
 \arguments{
 \item{ega}{Output from construct_ggm}
@@ -12,6 +12,8 @@ plot_ggm(ega, colors = NULL, legend.names = NULL)
 \item{colors}{A list of colors to color the clusters with (optional)}
 
 \item{legend.names}{A list of strings to label the clusters with (optional)}
+
+\item{label.size}{The font size of the node labels (Default: 3.5)}
 }
 \value{
 A plot of the GGM
