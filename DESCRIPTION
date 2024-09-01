@@ -30,7 +30,9 @@ Imports:
     tibble (>= 3.2.1),
     ComplexHeatmap (>= 2.14.0),
     circlize (>= 0.4.15),
-    NetworkComparisonTest (>= 2.2.1)
+    NetworkComparisonTest (>= 2.2.1),
+    bootnet (>= 1.5.3),
+    huge (>= 1.3.5)
 Suggests: 
     knitr,
     rmarkdown
