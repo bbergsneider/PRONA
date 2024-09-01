@@ -37,7 +37,7 @@ A new dataframe that includes community grouping information along
 with original symptom severity data
 }
 \description{
-This function takes in PRO symtom data and detects communities
+This function takes in PRO symptom data and detects communities
 of patients with shared symptom patterns based on concordance network
 clustering. See Henry et al., Plos One, 2018 for more details on
 methodology.

@@ -148,12 +148,11 @@ severity, the network for PC1 is sparse.
 
 ### 4. Perform Network Comparison Test (NCT)
 
-Finally, we can statistically assess the differences between the two
-networks using the Network Comparison Test. For details on how the
-Network Comparison Test works, please see [Borkulo et al., Psychol
-Methods, 2022](https://pubmed.ncbi.nlm.nih.gov/35404628/). The functions
-in PRONA serve as a wrapper for the functions in the
-[NetworkComparisonTest
+We can statistically assess the differences between the two networks
+using the Network Comparison Test. For details on how the Network
+Comparison Test works, please see [Borkulo et al., Psychol Methods,
+2022](https://pubmed.ncbi.nlm.nih.gov/35404628/). The functions in PRONA
+serve as a wrapper for the functions in the [NetworkComparisonTest
 package](https://github.com/cvborkulo/NetworkComparisonTest).
 
 The run_NCT function takes 8 parameters:
@@ -212,3 +211,135 @@ get_NCT_pvalues(nct.results, what = "edges")
 ```{r}
 get_NCT_pvalues(nct.results, what = "centralities")
 ```
+
+### 5. Assess the stability of patient communities using sub-sampling analysis
+
+To assess the stability of patient communities (aka how reliable they
+are), we can use sub-sampling analysis. This technique takes random
+subsamples of patients (default is subsamples of 100%, 99%, 95%, 90%,
+80%, 70%, 60%, 50%, 40%, 30%, 20%, and 10% of the original dataset) and
+reruns concordance network-based patient clustering on each of the
+subsamples.
+
+To perform this, we can use the cluster_subsamples function, which takes
+5 parameters:
+
+-   data: Original dataframe of symptom severities (formatted as
+    required by PRONA)
+
+-   detectAlgo: The community detection algorithm to use. It should be
+    the same as what you used when you ran get_communities. (Default:
+    WT)
+
+-   simil_measure: The similarity measure to use. It should be the same
+    as what you used when you ran get_communities. (Default: ARI)
+
+-   simplify_graphs: Boolean that indicates whether to simplify the
+    graph by removing multi-edges and loops. It should be the same as
+    what you used when you ran get_communities. (Default: TRUE)
+
+-   sampling_rates: A vector containing the percentages to subset the
+    data by. Default is c(1, 0.99, 0.95, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4,
+    0.3, 0.2, 0.1). If you change this, the vector must start with 1
+    (meaning the first subsample is 100% of the dataset) for downstream
+    analysis to work.
+
+```{r}
+subsample_communities_df <- cluster_subsamples(reduced_df)
+```
+
+The output is a dataframe that contains the community designations for
+each patient in each of the subsampling runs:
+
+```{r}
+head(subsample_communities_df, 5)
+```
+
+To see the distribution of patients across different communities in each
+subsampling run, we can use the following code. It is important to note
+that cluster labels do not necessarily overlap across different runs
+(for example, community #2 is "subsample_communities_df\$community_1"
+does not necessarily correspond to community #2 in
+"subsample_communities_df\$community_0.99"). Thus, you should compare
+the overall distribution of patients across different communities in
+different runs, but not the number of patients under each specific
+label:
+
+```{r}
+table(subsample_communities_df$community_1)
+table(subsample_communities_df$community_0.99)
+table(subsample_communities_df$community_0.95)
+table(subsample_communities_df$community_0.9)
+table(subsample_communities_df$community_0.8)
+table(subsample_communities_df$community_0.7)
+table(subsample_communities_df$community_0.6)
+table(subsample_communities_df$community_0.5)
+table(subsample_communities_df$community_0.4)
+table(subsample_communities_df$community_0.3)
+table(subsample_communities_df$community_0.2)
+table(subsample_communities_df$community_0.1)
+```
+
+Next, to compute the stability of each of the original clusters across
+all the subsampling runs, we can use the compute_cluster_stabilities and
+plot_cluster_stabilities functions. These functions define "stability"
+as how often data points that belong to the same cluster in the original
+data are still clustered together in the subsamples (this is also known
+as Prediction Strength). It is calculated by taking all the patients
+that belong to one of the individual clusters, finding which communities
+those patients have been grouped into in the new clustering iteration,
+and dividing the size of the largest community in the new iteration by
+the size of the original community.
+
+For example, say clustering on a dataset of 1000 patients yields three
+communities, one of 500 patients (community 1), one of 400 (community
+2), and one of 100 (community 3). We rerun clustering on a subsample of
+the data, and out of the 500 patients that originally belonged to
+community 1, 400 of them still belong to the same community, 50 belong
+to a different community, and 50 were randomly removed during
+subsampling. The "stability" of the original community 1 for this
+subsampling iteration is 400/400 = 0.8 (aka 80%).
+
+To perform this analysis on each of the original clusters for each of
+the subsampling iterations, use the following code:
+
+```{r}
+stabilities_df <- compute_cluster_stabilities(subsample_communities_df)
+stabilities_df
+```
+
+To plot these results, use the plot_cluster_stabilities function:
+
+```{r}
+plot_cluster_stabilities(stabilities_df)
+```
+
+Finally, we can use the Adjusted Rand Index (ARI) to assess the global
+stability of the community groupings across the different subsampling
+iterations. This helps us understand if the overall structure of
+clusters is consistent across different subsamples. We can calculate the
+ARI between the original clusters (represented by
+subsample_communities_df\$community_1) and each of the subsamples using
+the following code:
+
+```{r}
+library(mclust)
+adjustedRandIndex(subsample_communities_df$community_1, subsample_communities_df$community_0.99)
+adjustedRandIndex(subsample_communities_df$community_1, subsample_communities_df$community_0.95)
+adjustedRandIndex(subsample_communities_df$community_1, subsample_communities_df$community_0.9)
+adjustedRandIndex(subsample_communities_df$community_1, subsample_communities_df$community_0.8)
+adjustedRandIndex(subsample_communities_df$community_1, subsample_communities_df$community_0.7)
+adjustedRandIndex(subsample_communities_df$community_1, subsample_communities_df$community_0.6)
+adjustedRandIndex(subsample_communities_df$community_1, subsample_communities_df$community_0.5)
+adjustedRandIndex(subsample_communities_df$community_1, subsample_communities_df$community_0.4)
+adjustedRandIndex(subsample_communities_df$community_1, subsample_communities_df$community_0.3)
+adjustedRandIndex(subsample_communities_df$community_1, subsample_communities_df$community_0.2)
+adjustedRandIndex(subsample_communities_df$community_1, subsample_communities_df$community_0.1)
+```
+
+Although ARI is a helpful metric, it can be disproportionately skewed if
+there are specific clusters that are particularly unstable, even if the
+other clusters are generally stable. For this reason, we generally
+prefer the above analysis of individual cluster stability over ARI
+calculation because it gives you more specific information on which
+clusters are reliable and which are not.

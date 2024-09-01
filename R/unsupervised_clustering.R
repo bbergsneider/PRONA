@@ -89,7 +89,7 @@ similarity_matrix <- function(mat, concords=vecs2concords(mat), simil_measure='A
 
 #' Detect patient communities based on similarity of symptom patterns
 #'
-#' This function takes in PRO symtom data and detects communities
+#' This function takes in PRO symptom data and detects communities
 #' of patients with shared symptom patterns based on concordance network
 #' clustering. See Henry et al., Plos One, 2018 for more details on
 #' methodology.
@@ -169,4 +169,157 @@ get_communities <- function(data, nrows=nrow(data), ncols=ncol(data), detectAlgo
   }
 
   return(output_data)
+}
+
+
+#' Subsample patients and re-run clustering
+#'
+#' This function takes subsamples of the patient dataset and re-runs concordance
+#' network clustering to assess the stability of patient clusters. Specifically,
+#' it takes random subsamples of 100%, 99%, 95%, 90%, 80%, 70%, 60%, 50%, 40%,
+#' 30%, 20%, and 10% of the patient dataset. It re-runs clustering and outputs
+#' a dataframe containing the community membership of each patient in each of
+#' the subsampling runs.
+#'
+#' @param data Dataframe of symptom severities (formatted as required by PRONA)
+#' @param detectAlgo The community detection algorithm to use. Options include
+#' FG (fast greedy), IM (infomap), LP (label propagation), LE (leading eigen),
+#' LV (louvain), or WT (walktrap). (Default: WT)
+#' @param simil_measure The similarity measure to use, either 'Euclidean'
+#' or 'ARI' (Adjusted Rand Index) (Default: ARI)
+#' @param simplify_graphs Boolean that indicates whether to simplify the graph
+#' by removing multi-edges and loops (Default: TRUE)
+#' @param sampling_rates Vector containing the percentages to subset the dataset
+#' by. Default is c(1, 0.99, 0.95, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1).
+#' If you change this, the vector must start with 1 (meaning the first subsample
+#' is 100% of the dataset) for downstream analysis to work.
+#' @return A dataframe containing the community membership of each patient in
+#' each of the subsampling runs.
+#' @export
+
+cluster_subsamples <- function(data, detectAlgo='WT', simil_measure='ARI', simplify_graphs=TRUE, sampling_rates=c(1, 0.99, 0.95, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1)) {
+    # Initialize 'subsample_communities_df' dataframe
+    subsample_communities_df <- dplyr::select(data, ID)
+
+    # Loop over each sampling rate
+    for(i in seq_along(sampling_rates)) {
+      set.seed(42)
+      data_sample <- data[sample(1:nrow(data), size = nrow(data)*sampling_rates[i]), ] 
+      clusters <- get_communities(data_sample, detectAlgo, simil_measure, simplify_graphs)[, c('ID','community')]
+      
+      # Rename the 'community' column to reflect the sampling rate
+      colnames(clusters)[which(names(clusters) == "community")] <- paste0("community_", sampling_rates[i])
+      
+      # Merge the clusters with 'subsample_communities_df'
+      subsample_communities_df <- merge(subsample_communities_df, clusters, by = "ID", all.x = TRUE)
+    }
+
+    return(subsample_communities_df)
+}
+
+
+#' Compute stability of a single cluster across multiple subsampling runs
+#'
+#' This is a helper function for compute_cluster_stabilities. It computes the
+#' stability of a single cluster across different runs (iterations) of
+#' concordance network-based clustering.
+#'
+#' @param cluster_IDs The IDs of the patients in the original cluster of
+#' interest
+#' @param cluster_df A dataframe of the cluster assignments across different
+#' subsampling iterations for only the patients in the original cluster of
+#' interest
+#' @param cluster_cols The names of the columns for each clustering
+#' iteration
+#' @return A vector of the stability of the cluster of iterest across each
+#' of the subsampling iterations
+#' @export
+
+compute_cluster_stability <- function(cluster_IDs, cluster_df, cluster_cols) {
+  counts = sapply(cluster_cols, function(col) {
+    same_cluster = cluster_df[cluster_df$ID %in% cluster_IDs, col]
+    freq_clusters = table(same_cluster)
+    return(max(freq_clusters[names(freq_clusters) != ""]))
+  })
+  return(counts / length(cluster_IDs))
+}
+
+#' Compute stabilities of multiple clusters across multiple subsampling runs
+#'
+#' This function computes the stabilities of the clusters in the original
+#' clustering run across multiple subsampling runs. "Stability" is how often
+#' data points that belong to the same cluster in the original data are still
+#' clustered together in the subsamples (this is also known as Prediction
+#' Strength). It is calculated by taking all the patients that belong to
+#' one of the individual clusters, finding which communities those patients
+#' have been grouped into in the new clustering iteration, and dividing the size
+#' of the largest community in the new iteration by the size of original
+#' community. For example, say clustering on a dataset of 1000 patients yields
+#' three communities, one of 500 patients (community 1), one of 400 (community
+#' 2), and one of 100 (community 3). We rerun clustering on a subsample of the
+#' data, and out of the 500 patients that originally belonged to community 1,
+#' 400 of them still belong to community 1,  50 belong to community 2, and 50
+#' were randomly removed during subsampling. The "stability" of the
+#' original community 1 for this subsampling iteration is 400/500 = 0.8
+#' (aka 80%).
+#'
+#' @param subsample_communities_df The output of the cluster_subsamples function
+#' @return A dataframe containing the stability of each cluster in each
+#' subsampling iteration.
+#' @export
+
+compute_cluster_stabilities <- function(subsample_communities_df) {
+  # Get the columns of the different subsampling runs
+  cluster_cols = grep('community_', names(subsample_communities_df), value=TRUE)
+
+  # Loop over each cluster in the original clustering
+  original_clusters = unique(subsample_communities_df$community_1)
+
+  # Calculate the stability of each cluster in each subsampling run
+  stabilities = sapply(original_clusters, function(cluster) {
+    cluster_IDs = subsample_communities_df$ID[subsample_communities_df$community_1 == cluster]
+    stability = compute_cluster_stability(cluster_IDs, subsample_communities_df, cluster_cols)
+  })
+
+  # Convert stabilities to a dataframe
+  stabilities_df <- as.data.frame(stabilities)
+  colnames(stabilities_df) <- paste("Cluster", seq_len(ncol(stabilities_df)), "Stability")
+  stabilities_df$SamplingRate <- gsub("community_", "", rownames(stabilities_df))
+  stabilities_df <- dplyr::select(stabilities_df, SamplingRate, dplyr::everything())
+  rownames(stabilities_df) <- NULL
+
+  return(stabilities_df)
+}
+
+
+#' Plot cluster stabilities
+#'
+#' This function plots the results of compute_cluster_stabilities.
+#'
+#' @param stabilities_df The output of compute_cluster_stabilities
+#' @return A ggplot object of a plot of the cluster stabilities
+#' @export
+
+plot_cluster_stabilities <- function(stabilities_df) {
+  # Change dataframe to long format
+  stability_df <- stabilities_df %>%
+    dplyr::mutate(SamplingRate = as.numeric(SamplingRate)) %>%
+    tidyr::gather("Cluster", "Stability", -SamplingRate) %>%
+    dplyr::mutate(dplyr::across(c(SamplingRate, Stability), ~ifelse(is.finite(.), ., NA))) %>%
+    na.omit()
+
+  # Plot line graph of stabilities for each cluster
+  p <- ggplot2::ggplot(stability_df, ggplot2::aes(x=SamplingRate, y=Stability, color=Cluster)) + 
+       ggplot2::geom_point(size = 2) +
+       ggplot2::geom_smooth(method = 'lm', linetype = 1, se = TRUE, size = 0.5) +
+       ggplot2::theme_minimal() +
+       ggplot2::xlab("Sampling Rate") +
+       ggplot2::ylab("Stability") +
+       ggplot2::theme(axis.text.y=ggplot2::element_text(size=10), 
+                      axis.text.x=ggplot2::element_text(size=10),
+                      legend.position = "none",
+                      strip.text = ggplot2::element_text(size = 10)) +
+       ggplot2::facet_wrap(~Cluster, ncol = length(unique(stability_df$Cluster)))
+
+  return(p)
 }
