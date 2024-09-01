@@ -29,11 +29,12 @@ run_bootEGA <- function(df, normal = FALSE, iter = 10000) {
 #' This function plots the median determined by BootEGA stability analysis
 #'
 #' @param boot.ega Output of run_bootEGA function
+#' @param label.size Font size of node labels (Default: 4)
 #' @return A plot of the median GGM
 #' @export
 
-plot_bootEGA <- function(boot.ega) {
-    median_boot_ega <- plot(boot.ega, plot.args = list(node.size = 8, label.size = 4))
+plot_bootEGA <- function(boot.ega, label.size = 4) {
+    median_boot_ega <- plot(boot.ega, plot.args = list(node.size = 8, label.size = label.size))
     return(median_boot_ega)
 }
 

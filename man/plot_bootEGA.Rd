@@ -4,10 +4,12 @@
 \alias{plot_bootEGA}
 \title{Plot median network structure from bootEGA}
 \usage{
-plot_bootEGA(boot.ega)
+plot_bootEGA(boot.ega, label.size = 4)
 }
 \arguments{
 \item{boot.ega}{Output of run_bootEGA function}
+
+\item{label.size}{Font size of node labels (Default: 4)}
 }
 \value{
 A plot of the median GGM

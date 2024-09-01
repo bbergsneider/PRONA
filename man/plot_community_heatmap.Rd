@@ -4,7 +4,12 @@
 \alias{plot_community_heatmap}
 \title{Plot heatmap of symptom severities in different communities}
 \usage{
-plot_community_heatmap(data, cluster_rows = TRUE, symptom_order = NULL)
+plot_community_heatmap(
+  data,
+  cluster_rows = TRUE,
+  symptom_order = NULL,
+  colors = "red"
+)
 }
 \arguments{
 \item{data}{The output of the get_communities function, which is
@@ -19,6 +24,13 @@ to plot symptoms on the y-axis. This order will only show up if
 cluster_rows = FALSE. The default order if cluster_rows = FALSE is
 the order of column names in the dataframe (minus the ID and
 community columns)}
+
+\item{colors}{A vector of colors to use for plotting the heatmaps
+for each community. If there is only one color, all communities will
+be plotted in that color. If the vector denotes colors for each community,
+each community will be a different color. If the length of the vector
+and the number of communities do not match, an error will be thrown.
+(Default: 'red').}
 }
 \value{
 A heatmap of the symptom severities in each community

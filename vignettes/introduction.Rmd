@@ -152,7 +152,7 @@ The parameters for the perform_uva_consolidation function are:
 -   new.names: Vector of new names to give to consolidated variables.
     Variable pairs will be renamed in descending order of wTO. If this
     vector is not given, new variable pairs will be renamed "CV1",
-    "CV2", etc\... Moreover, if reduce.method = "remove", this vector
+    "CV2", etc... Moreover, if reduce.method = "remove", this vector
     will not be used. (Default: NULL)
 
 -   output_dir: The directory in which the .RDS and .csv outputs of
@@ -209,7 +209,7 @@ ptsd_network <- construct_ggm(reduced_df, normal = FALSE)
 ```
 
 ```{r, fig.width=9, fig.height=6}
-plot_ggm(ptsd_network)
+plot_ggm(ptsd_network, label.size = 2.5)
 ```
 
 ```{r}

@@ -13,15 +13,20 @@
 #' cluster_rows = FALSE. The default order if cluster_rows = FALSE is
 #' the order of column names in the dataframe (minus the ID and
 #' community columns)
+#' @param colors A vector of colors to use for plotting the heatmaps
+#' for each community. If there is only one color, all communities will
+#' be plotted in that color. If the vector denotes colors for each community,
+#' each community will be a different color. If the length of the vector
+#' and the number of communities do not match, an error will be thrown.
+#' (Default: 'red').
 #' @return A heatmap of the symptom severities in each community
 #' @export
 
-plot_community_heatmap <- function(data, cluster_rows = TRUE, symptom_order = NULL) {
+plot_community_heatmap <- function(data, cluster_rows = TRUE, symptom_order = NULL, colors = 'red') {
     # Check if data is formatted properly
     check_data_format_communities(data)
 
-    # If symptom_order is NULL, set it to the order of column names in the
-    # dataframe by default
+    # If symptom_order is NULL, set it to the order of column names in the dataframe by default
     if (is.null(symptom_order)) {
         symptom_order <- colnames(data)[c(3:length(colnames(data)))]
     }
@@ -29,19 +34,32 @@ plot_community_heatmap <- function(data, cluster_rows = TRUE, symptom_order = NU
     # Splitting the data by community and then selecting the necessary columns
     community_symptom_data_list <- split(data, data$community)
     community_symptom_data_list <- lapply(community_symptom_data_list, function(x) dplyr::select(x, -ID, -community))
-
+    
     # Combine all the data to find the global minimum and maximum values
     all_data_combined <- do.call(rbind, community_symptom_data_list)
     min_value <- min(all_data_combined, na.rm = TRUE)
     max_value <- max(all_data_combined, na.rm = TRUE)
 
-    # Create the color function based on the minimum and maximum values
-    col_fun = circlize::colorRamp2(c(min_value, max_value), c('white', 'red'))
-
-    # Create a heatmap for each community
-    heatmaps <- lapply(seq_along(community_symptom_data_list), function(i) {
-        create_community_heatmap(community_symptom_data_list, community_symptom_data_list[[i]], i, col_fun, cluster_rows, symptom_order)
-    })
+    if (length(colors) == 1) {
+      col_fun = circlize::colorRamp2(c(min_value, max_value), c('white', colors))
+      # Create a heatmap for each community
+      heatmaps <- lapply(seq_along(community_symptom_data_list), function(i) {
+          create_community_heatmap(community_symptom_data_list, community_symptom_data_list[[i]], i, col_fun, cluster_rows, symptom_order)
+      })
+    } else if (length(colors) != length(unique(community_df$community))) {
+      stop("The number of colors provided must be either 1 or equal to the number of communities")
+    } else {
+      # Define list of color schemes
+      color_scheme = list()
+      for (color in colors) {
+        color_scheme <- append(color_scheme, list(c("white", color)))
+      }
+      # Create a heatmap for each community
+      heatmaps <- lapply(seq_along(community_symptom_data_list), function(i) {
+          col_fun = circlize::colorRamp2(c(min_value, max_value), color_scheme[[i]])
+          create_community_heatmap(community_symptom_data_list, community_symptom_data_list[[i]], i, col_fun, cluster_rows, symptom_order)
+      })
+    }
 
     # Combine the heatmaps
     heatmap_plot <- Reduce("+", heatmaps)
