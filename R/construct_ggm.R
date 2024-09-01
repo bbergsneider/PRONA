@@ -32,21 +32,22 @@ construct_ggm <- function(df, normal = FALSE) {
 #' @param ega Output from construct_ggm
 #' @param colors A list of colors to color the clusters with (optional)
 #' @param legend.names A list of strings to label the clusters with (optional)
+#' @param label.size The font size of the node labels (Default: 3.5)
 #' @return A plot of the GGM
 #' @export
 
-plot_ggm <- function(ega, colors = NULL, legend.names = NULL) {
+plot_ggm <- function(ega, colors = NULL, legend.names = NULL, label.size = 3.5) {
     if (is.null(colors)) {
         if (is.null(legend.names)) {
-            ega_plot <- plot(ega, plot.args = list(node.size = 8, label.size = 3.5))
+            ega_plot <- plot(ega, plot.args = list(node.size = 8, label.size = label.size))
         } else {
-            ega_plot <- plot(ega, plot.args = list(node.size = 8, label.size = 3.5, legend.names = legend.names))
+            ega_plot <- plot(ega, plot.args = list(node.size = 8, label.size = label.size, legend.names = legend.names))
         }
     } else {
         if (is.null(legend.names)) {
-            ega_plot <- plot(ega, plot.args = list(node.size = 8, label.size = 3.5, color.palette = colors))
+            ega_plot <- plot(ega, plot.args = list(node.size = 8, label.size = label.size, color.palette = colors))
         } else {
-            ega_plot <- plot(ega, plot.args = list(node.size = 8, label.size = 3.5, color.palette = colors, legend.names = legend.names))
+            ega_plot <- plot(ega, plot.args = list(node.size = 8, label.size = label.size, color.palette = colors, legend.names = legend.names))
         }
     }
     return(ega_plot)
