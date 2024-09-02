@@ -82,17 +82,16 @@ the plot_community_heatmap function, which has four parameters:
     rows (symptoms) via heirarchical clustering (Default: TRUE)
 
 -   symptom_order: A vector of symptom names indicating the order to
-    plot symptoms on the y-axis. This order will only show up if
-    cluster_rows = FALSE. The default order if cluster_rows = FALSE is
-    the order of column names in the dataframe (minus the ID and
-    community columns)
+    plot symptoms on the y-axis. This overrides cluster_rows. The
+    default order if cluster_rows = FALSE and symptom_order = NULL is
+    the order of the column names in the dataframe (minus the ID and
+    community columns). (Default: NULL)
 
--   colors: A vector of colors to use for plotting the heatmaps for each
-    community. If there is only one color, all communities will be
-    plotted in that color. If the vector denotes colors for each
-    community, each community will be in a different color. If the
-    length of the vector and the number of communities do not match, an
-    error will be thrown. (Default: all clusters are red)
+-   network: A network object output by construct_ggm. If a network is
+    passed into this function, the heatmap will automatically order rows
+    (symptoms) by the symptom clusters identified in the network. This
+    overrides the cluster_rows and symptom_order parameters. (Default:
+    NULL)
 
 Here, "PC" stands for "Patient Community":
 
@@ -100,10 +99,11 @@ Here, "PC" stands for "Patient Community":
 plot_community_heatmap(community_df)
 ```
 
-Here's how to plot the communities in different colors:
+Here's how to order rows based on the symptom clusters identified during
+network construction:
 
 ```{r, fig.width=7, fig.height=5}
-plot_community_heatmap(community_df, colors = c('red','blue','orange'))
+plot_community_heatmap(community_df, network = ptsd_network)
 ```
 
 We can also visualize the symptom severities of each community using

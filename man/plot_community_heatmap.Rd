@@ -8,7 +8,7 @@ plot_community_heatmap(
   data,
   cluster_rows = TRUE,
   symptom_order = NULL,
-  colors = "red"
+  network = NULL
 )
 }
 \arguments{
@@ -20,17 +20,16 @@ community each patient belongs to}
 the rows via heirarchical clustering (Default: TRUE)}
 
 \item{symptom_order}{A vector of symptom names indicating the order
-to plot symptoms on the y-axis. This order will only show up if
-cluster_rows = FALSE. The default order if cluster_rows = FALSE is
-the order of column names in the dataframe (minus the ID and
+to plot symptoms on the y-axis. This overrides cluster_rows.
+The default order if cluster_rows = FALSE and symptom_order = NULL
+is the order of column names in the dataframe (minus the ID and
 community columns)}
 
-\item{colors}{A vector of colors to use for plotting the heatmaps
-for each community. If there is only one color, all communities will
-be plotted in that color. If the vector denotes colors for each community,
-each community will be a different color. If the length of the vector
-and the number of communities do not match, an error will be thrown.
-(Default: 'red').}
+\item{network}{An optional parameter that lets you pass in a network
+object output by construct_ggm. If a network is passed into this function,
+the heatmap will automatically order rows (symptoms) by the symptom
+clusters identified in the network. This overrides the cluster_rows and
+symptom_order parameters.}
 }
 \value{
 A heatmap of the symptom severities in each community

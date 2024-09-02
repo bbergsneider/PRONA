@@ -9,26 +9,27 @@
 #' @param cluster_rows Boolean representing whether or not to cluster
 #' the rows via heirarchical clustering (Default: TRUE)
 #' @param symptom_order A vector of symptom names indicating the order
-#' to plot symptoms on the y-axis. This order will only show up if
-#' cluster_rows = FALSE. The default order if cluster_rows = FALSE is
-#' the order of column names in the dataframe (minus the ID and
+#' to plot symptoms on the y-axis. This overrides cluster_rows.
+#' The default order if cluster_rows = FALSE and symptom_order = NULL
+#' is the order of column names in the dataframe (minus the ID and
 #' community columns)
-#' @param colors A vector of colors to use for plotting the heatmaps
-#' for each community. If there is only one color, all communities will
-#' be plotted in that color. If the vector denotes colors for each community,
-#' each community will be a different color. If the length of the vector
-#' and the number of communities do not match, an error will be thrown.
-#' (Default: 'red').
+#' @param network An optional parameter that lets you pass in a network
+#' object output by construct_ggm. If a network is passed into this function,
+#' the heatmap will automatically order rows (symptoms) by the symptom
+#' clusters identified in the network. This overrides the cluster_rows and
+#' symptom_order parameters.
 #' @return A heatmap of the symptom severities in each community
 #' @export
 
-plot_community_heatmap <- function(data, cluster_rows = TRUE, symptom_order = NULL, colors = 'red') {
+plot_community_heatmap <- function(data, cluster_rows = TRUE, symptom_order = NULL, network = NULL) {
     # Check if data is formatted properly
     check_data_format_communities(data)
 
     # If symptom_order is NULL, set it to the order of column names in the dataframe by default
     if (is.null(symptom_order)) {
         symptom_order <- colnames(data)[c(3:length(colnames(data)))]
+    } else { # if symptom order is not null, set cluster_rows to false
+      cluster_rows = FALSE
     }
 
     # Splitting the data by community and then selecting the necessary columns
@@ -40,23 +41,20 @@ plot_community_heatmap <- function(data, cluster_rows = TRUE, symptom_order = NU
     min_value <- min(all_data_combined, na.rm = TRUE)
     max_value <- max(all_data_combined, na.rm = TRUE)
 
-    if (length(colors) == 1) {
-      col_fun = circlize::colorRamp2(c(min_value, max_value), c('white', colors))
-      # Create a heatmap for each community
+    # Create a heatmap for each community
+    if(is.null(network)){
+      col_fun = circlize::colorRamp2(c(min_value, max_value), c('white', 'red'))
       heatmaps <- lapply(seq_along(community_symptom_data_list), function(i) {
           create_community_heatmap(community_symptom_data_list, community_symptom_data_list[[i]], i, col_fun, cluster_rows, symptom_order)
       })
-    } else if (length(colors) != length(unique(community_df$community))) {
-      stop("The number of colors provided must be either 1 or equal to the number of communities")
     } else {
-      # Define list of color schemes
-      color_scheme = list()
-      for (color in colors) {
-        color_scheme <- append(color_scheme, list(c("white", color)))
-      }
-      # Create a heatmap for each community
+      row_communities <- network$wc
+      data <- data[,c(1,2,order(row_communities[colnames(data)]))]
+      data <- data[ , -((ncol(data)-1):ncol(data))]
+      symptom_order <- colnames(data)[c(3:length(colnames(data)))] # by default, if network is not null symptom order is overriden
+      cluster_rows = FALSE # similarly, cluster_rows is overriden
+      col_fun = circlize::colorRamp2(c(min_value, max_value), c('white', 'red'))
       heatmaps <- lapply(seq_along(community_symptom_data_list), function(i) {
-          col_fun = circlize::colorRamp2(c(min_value, max_value), color_scheme[[i]])
           create_community_heatmap(community_symptom_data_list, community_symptom_data_list[[i]], i, col_fun, cluster_rows, symptom_order)
       })
     }
