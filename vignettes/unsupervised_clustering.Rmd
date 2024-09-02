@@ -102,7 +102,7 @@ plot_community_heatmap(community_df)
 
 Here's how to plot the communities in different colors:
 
-```{r}
+```{r, fig.width=7, fig.height=5}
 plot_community_heatmap(community_df, colors = c('red','blue','orange'))
 ```
 
@@ -323,7 +323,7 @@ stabilities_df
 
 To plot these results, use the plot_cluster_stabilities function:
 
-```{r}
+```{r, fig.width=7, fig.height=5}
 plot_cluster_stabilities(stabilities_df)
 ```
 
