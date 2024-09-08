@@ -8,116 +8,58 @@
 #' community each patient belongs to
 #' @param cluster_rows Boolean representing whether or not to cluster
 #' the rows via heirarchical clustering (Default: TRUE)
-#' @param symptom_order A vector of symptom names indicating the order
-#' to plot symptoms on the y-axis. This overrides cluster_rows.
-#' The default order if cluster_rows = FALSE and symptom_order = NULL
-#' is the order of column names in the dataframe (minus the ID and
-#' community columns)
 #' @param network An optional parameter that lets you pass in a network
 #' object output by construct_ggm. If a network is passed into this function,
 #' the heatmap will automatically order rows (symptoms) by the symptom
-#' clusters identified in the network. This overrides the cluster_rows and
-#' symptom_order parameters.
+#' clusters identified in the network. This overrides the cluster_rows
+#' parameter. (Default: NULL)
+#' @param row_label_size The font size of the row labels (Default: 10)
 #' @return A heatmap of the symptom severities in each community
 #' @export
 
-plot_community_heatmap <- function(data, cluster_rows = TRUE, symptom_order = NULL, network = NULL) {
-    # Check if data is formatted properly
-    check_data_format_communities(data)
-
-    # If symptom_order is NULL, set it to the order of column names in the dataframe by default
-    if (is.null(symptom_order)) {
-        symptom_order <- colnames(data)[c(3:length(colnames(data)))]
-    } else { # if symptom order is not null, set cluster_rows to false
-      cluster_rows = FALSE
-    }
-
-    # Splitting the data by community and then selecting the necessary columns
-    community_symptom_data_list <- split(data, data$community)
-    community_symptom_data_list <- lapply(community_symptom_data_list, function(x) dplyr::select(x, -ID, -community))
-    
-    # Combine all the data to find the global minimum and maximum values
-    all_data_combined <- do.call(rbind, community_symptom_data_list)
-    min_value <- min(all_data_combined, na.rm = TRUE)
-    max_value <- max(all_data_combined, na.rm = TRUE)
-
-    # Create a heatmap for each community
-    if(is.null(network)){
-      col_fun = circlize::colorRamp2(c(min_value, max_value), c('white', 'red'))
-      heatmaps <- lapply(seq_along(community_symptom_data_list), function(i) {
-          create_community_heatmap(community_symptom_data_list, community_symptom_data_list[[i]], i, col_fun, cluster_rows, symptom_order)
-      })
-    } else {
-      row_communities <- network$wc
-      data <- data[,c(1,2,order(row_communities[colnames(data)]))]
-      data <- data[ , -((ncol(data)-1):ncol(data))]
-      symptom_order <- colnames(data)[c(3:length(colnames(data)))] # by default, if network is not null symptom order is overriden
-      cluster_rows = FALSE # similarly, cluster_rows is overriden
-      col_fun = circlize::colorRamp2(c(min_value, max_value), c('white', 'red'))
-      heatmaps <- lapply(seq_along(community_symptom_data_list), function(i) {
-          create_community_heatmap(community_symptom_data_list, community_symptom_data_list[[i]], i, col_fun, cluster_rows, symptom_order)
-      })
-    }
-
-    # Combine the heatmaps
-    heatmap_plot <- Reduce("+", heatmaps)
-    return(heatmap_plot)
-}
-
-
-#' Function for plotting heatmap for a single community
-#'
-#' Function for plotting a heatmap for a single community.
-#' Helper function for plot_community_heatmap.
-#'
-#' @param community_symptom_data_list list of symptom data for each community
-#' @param data symptom severity for single community
-#' @param cluster_number number of community of interest
-#' @param col_fun palette to use for heatmap
-#' @param cluster_rows Boolean representing whether or not to cluster
-#' the rows via heirarchical clustering
-#' @param symptom_order A vector of symptom names indicating the order
-#' to plot symptoms on the y-axis.
-#' @return A heatmap of the symptom severities in one community
-#' @export
-#'
-create_community_heatmap <- function(community_symptom_data_list, data, cluster_number, col_fun, cluster_rows, symptom_order) {
-  # Order rows by symptom_order
-  data_ordered <- order_rows_by_vector(data, order_vector = symptom_order)
-
-  # Set up heatmap arguments
-  heatmap_args <- list(
-    data.matrix(t(data_ordered)),
-    col = col_fun,
-    name = paste("Cluster", cluster_number),
-    column_title = paste('PC', cluster_number),
-    show_heatmap_legend = (cluster_number == 1),
-    cluster_rows = cluster_rows,
-    column_names_gp = grid::gpar(fontsize = 0)
-  )
-
-  # Check if it's the last community, and if so, add the row_names_gp parameter
-  if (cluster_number == length(community_symptom_data_list)) {
-    heatmap_args$row_names_gp = grid::gpar(fontsize = 8)
+plot_community_heatmap <- function(data, cluster_rows = TRUE, network = NULL, row_label_size = 10) {
+  # Check if data is formatted properly
+  check_data_format_communities(data)
+ 
+  m <- data.matrix(t(data[,3:ncol(data)]))
+ 
+  # Combine all the data to find the global minimum and maximum values
+  min_value <- min(m, na.rm = TRUE)
+  max_value <- max(m, na.rm = TRUE)
+  col_fun = circlize::colorRamp2(c(min_value, max_value), c('white', 'red'))
+ 
+  gg_color_hue <- function(n) {
+    hues = seq(15, 375, length = n + 1)
+    hcl(h = hues, l = 65, c = 100)[1:n]
   }
-
-  do.call(ComplexHeatmap::Heatmap, heatmap_args)
-}
-
-
-#' Function for ordering rows of a dataframe
-#'
-#' Function for order rows of a dataframe based on an input vector.
-#' This is a helper function create_community_heatmap
-#'
-#' @param data dataframe of symptom severity
-#' @param order_vector vector of how you want symptoms ordered
-#' @return dataframe with rows ordered as specified
-#' @export
-#'
-order_rows_by_vector <- function(data, order_vector) {
-    data_ordered = data[, order_vector]
-    return(data_ordered)
+  communities <- paste("PC", levels(as.factor(unique(data$community))))
+  ncommunities <- length(communities)
+  community_colors <- gg_color_hue(ncommunities+1)[2:(ncommunities+1)]
+  names(community_colors) <- communities
+  column_ha = ComplexHeatmap::HeatmapAnnotation(`PC` = paste("PC", data$community), col=list(`PC`=community_colors), show_legend = FALSE)
+ 
+  if (is.null(network)){
+    heatmap_plot <- ComplexHeatmap::Heatmap(m, col=col_fun,
+                                            column_split=paste("PC", data$community),
+                                            cluster_column_slices = FALSE,
+                                            name="rating", show_column_dend = FALSE,
+                                            top_annotation = column_ha,
+                                            row_names_gp = grid::gpar(fontsize=row_label_size),
+                                            cluster_rows = cluster_rows)
+  } else {
+    row_community <- network$wc
+    row_communities <- paste("SC", levels(as.factor(unique(network$wc))))
+    row_community_colors <- gg_color_hue(length(row_communities))
+    names(row_community_colors) <- row_communities
+    symptom_order <- rownames(m)[order(row_community)]
+    row_ha = ComplexHeatmap::rowAnnotation(`SC` = paste("SC", row_community[order(row_community)]), col=list(`SC`=row_community_colors), show_legend = FALSE)
+   
+    heatmap_plot <- ComplexHeatmap::Heatmap(m[symptom_order, ], col=col_fun, column_split=paste("PC", data$community),
+                               cluster_column_slices = FALSE, name="rating", show_column_dend = FALSE,
+                               top_annotation = column_ha, cluster_rows=FALSE, right_annotation = row_ha, row_names_gp = grid::gpar(fontsize=row_label_size))
+   
+  }
+  return(ComplexHeatmap::draw(heatmap_plot, heatmap_legend_side = "left"))
 }
 
 

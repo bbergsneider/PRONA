@@ -81,29 +81,24 @@ the plot_community_heatmap function, which has four parameters:
 -   cluster_rows: Boolean representing whether or not to cluster the
     rows (symptoms) via heirarchical clustering (Default: TRUE)
 
--   symptom_order: A vector of symptom names indicating the order to
-    plot symptoms on the y-axis. This overrides cluster_rows. The
-    default order if cluster_rows = FALSE and symptom_order = NULL is
-    the order of the column names in the dataframe (minus the ID and
-    community columns). (Default: NULL)
-
 -   network: A network object output by construct_ggm. If a network is
     passed into this function, the heatmap will automatically order rows
     (symptoms) by the symptom clusters identified in the network. This
-    overrides the cluster_rows and symptom_order parameters. (Default:
-    NULL)
+    overrides the cluster_rows parameter. (Default: NULL)
+
+-   row_label_size: The font size of the row labels (Default: 10)
 
 Here, "PC" stands for "Patient Community":
 
 ```{r, fig.width=7, fig.height=5}
-plot_community_heatmap(community_df)
+plot_community_heatmap(community_df, row_label_size = 9)
 ```
 
 Here's how to order rows based on the symptom clusters identified during
 network construction:
 
 ```{r, fig.width=7, fig.height=5}
-plot_community_heatmap(community_df, network = ptsd_network)
+plot_community_heatmap(community_df, network = ptsd_network, row_label_size = 9)
 ```
 
 We can also visualize the symptom severities of each community using
@@ -311,7 +306,7 @@ the data, and out of the 500 patients that originally belonged to
 community 1, 400 of them still belong to the same community, 50 belong
 to a different community, and 50 were randomly removed during
 subsampling. The "stability" of the original community 1 for this
-subsampling iteration is 400/400 = 0.8 (aka 80%).
+subsampling iteration is 400/500 = 0.8 (aka 80%).
 
 To perform this analysis on each of the original clusters for each of
 the subsampling iterations, use the following code:

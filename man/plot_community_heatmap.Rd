@@ -7,8 +7,8 @@
 plot_community_heatmap(
   data,
   cluster_rows = TRUE,
-  symptom_order = NULL,
-  network = NULL
+  network = NULL,
+  row_label_size = 10
 )
 }
 \arguments{
@@ -19,17 +19,13 @@ community each patient belongs to}
 \item{cluster_rows}{Boolean representing whether or not to cluster
 the rows via heirarchical clustering (Default: TRUE)}
 
-\item{symptom_order}{A vector of symptom names indicating the order
-to plot symptoms on the y-axis. This overrides cluster_rows.
-The default order if cluster_rows = FALSE and symptom_order = NULL
-is the order of column names in the dataframe (minus the ID and
-community columns)}
-
 \item{network}{An optional parameter that lets you pass in a network
 object output by construct_ggm. If a network is passed into this function,
 the heatmap will automatically order rows (symptoms) by the symptom
-clusters identified in the network. This overrides the cluster_rows and
-symptom_order parameters.}
+clusters identified in the network. This overrides the cluster_rows
+parameter. (Default: NULL)}
+
+\item{row_label_size}{The font size of the row labels (Default: 10)}
 }
 \value{
 A heatmap of the symptom severities in each community
