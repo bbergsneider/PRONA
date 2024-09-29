@@ -2,7 +2,8 @@
 #'
 #' This function takes in a dataframe of symptom severity/frequency data
 #' (in PRONA format) at creates a Gaussian Graphical Model (GGM) for it
-#' using the EGA function from the R package EGAnet.
+#' using the EGA function from the R package EGAnet. Any unspecified parameters
+#' are passed into the EGA function in EGAnet.
 #'
 #' @param df Dataframe of symptom severity/frequency data
 #' @param normal Whether to consider all variables normally distrubted.
@@ -10,7 +11,7 @@
 #' @return The output of the EGA function from EGAnet
 #' @export
 
-construct_ggm <- function(df, normal = FALSE) {
+construct_ggm <- function(df, normal = FALSE, ...) {
     check_data_format(df) # Check if df is formatted properly
     df <- dplyr::select(df, -ID) # Remove ID column
 
@@ -19,7 +20,7 @@ construct_ggm <- function(df, normal = FALSE) {
 
     # Construct an EBIC-GLASSO regularized GGM using the EGA function from EGAnet
     # EGA also identifies symptom clusters using the walktrap algorithm
-    ega <- EGAnet::EGA(cor_matrix, n = nrow(df), plot.EGA = FALSE)
+    ega <- EGAnet::EGA(cor_matrix, n = nrow(df), plot.EGA = FALSE, ...)
 
     return(ega)
 }

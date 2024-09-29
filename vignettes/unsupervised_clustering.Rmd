@@ -139,12 +139,20 @@ comm2_df <- community_df[community_df$community==2,] %>% select(-community)
 comm1_ega <- construct_ggm(comm1_df, normal = FALSE)
 ```
 
+```{r}
+summary(comm1_ega)
+```
+
 ```{r, fig.width=7, fig.height=5}
 plot_ggm(comm1_ega, label.size = 2.5)
 ```
 
 ```{r}
 comm2_ega <- construct_ggm(comm2_df, normal = FALSE)
+```
+
+```{r}
+summary(comm2_ega)
 ```
 
 ```{r, fig.width=7, fig.height=5}
@@ -163,7 +171,7 @@ Comparison Test works, please see [Borkulo et al., Psychol Methods,
 serve as a wrapper for the functions in the [NetworkComparisonTest
 package](https://github.com/cvborkulo/NetworkComparisonTest).
 
-The run_NCT function takes 8 parameters:
+The run_NCT function takes 9 parameters:
 
 -   df1: First dataframe of symptom severity/frequency data
 
@@ -188,11 +196,15 @@ The run_NCT function takes 8 parameters:
 -   centrality: Vector of which centrality measures to test (Default:
     c('closeness','betweenness','strength','expectedInfluence'))
 
+-   gamma: The EBIC tuning parameter to use. Must be 0, 0.25, or 0.5.
+    (Default: 0)
+
 ```{r, results='hide'}
 # Replace file path with wherever you want to save the results of NCT
 nct.file <- "../../PRONA_additional_files/test_scripts/output/nct.RDS"
 if (!file.exists(nct.file)){
-  nct.results <- run_NCT(comm1_df, comm2_df)
+  # since the construct_ggm function for comm1_ega used a gamma = 0, we will do the same here
+  nct.results <- run_NCT(comm1_df, comm2_df, gamma = 0)
   saveRDS(nct.results, nct.file)}
 nct.results <- readRDS(nct.file)
 ```

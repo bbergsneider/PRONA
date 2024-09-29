@@ -1,4 +1,5 @@
 #' Network estimation function that assumes all variables are normally distributed
+#' and uses gamma = 0
 #'
 #' This function is used by bootnet functions to specify how
 #' the GGM should be calculated
@@ -8,7 +9,7 @@
 #' a partial correlation matrix
 #' @export
 
-network_estimation_fun_normal <- function(df) {
+network_estimation_fun_normal_gamma0 <- function(df) {
   # Calculate correlation matrix
   cor_matrix <- qgraph::cor_auto(df, detectOrdinal=FALSE, forcePD=TRUE, npn.SKEPTIC = FALSE)
   # Perform EBIC glasso with gamma = 0
@@ -17,7 +18,8 @@ network_estimation_fun_normal <- function(df) {
   return(EBIC_matrix)
 }
 
-#' Network estimation function that assumes all variables are non-normally distributed
+#' Network estimation function that assumes all variables are normally distributed
+#' and uses gamma = 0.25
 #'
 #' This function is used by bootnet functions to specify how
 #' the GGM should be calculated
@@ -27,7 +29,47 @@ network_estimation_fun_normal <- function(df) {
 #' a partial correlation matrix
 #' @export
 
-network_estimation_fun_non_normal <- function(df) {
+network_estimation_fun_normal_gamma0.25 <- function(df) {
+  # Calculate correlation matrix
+  cor_matrix <- qgraph::cor_auto(df, detectOrdinal=FALSE, forcePD=TRUE, npn.SKEPTIC = FALSE)
+  # Perform EBIC glasso with gamma = 0.25
+  EBIC_matrix <- qgraph::EBICglasso(cor_matrix, nrow(df), 0.25)
+
+  return(EBIC_matrix)
+}
+
+#' Network estimation function that assumes all variables are normally distributed
+#' and uses gamma = 0.5
+#'
+#' This function is used by bootnet functions to specify how
+#' the GGM should be calculated
+#'
+#' @param df Dataframe of symptom severity/frequency data
+#' @return The output of the EBICglasso function from qgraph, which is
+#' a partial correlation matrix
+#' @export
+
+network_estimation_fun_normal_gamma0.5 <- function(df) {
+  # Calculate correlation matrix
+  cor_matrix <- qgraph::cor_auto(df, detectOrdinal=FALSE, forcePD=TRUE, npn.SKEPTIC = FALSE)
+  # Perform EBIC glasso with gamma = 0.5
+  EBIC_matrix <- qgraph::EBICglasso(cor_matrix, nrow(df), 0.5)
+
+  return(EBIC_matrix)
+}
+
+#' Network estimation function that assumes all variables are non-normally distributed
+#' and uses gamma = 0
+#'
+#' This function is used by bootnet functions to specify how
+#' the GGM should be calculated
+#'
+#' @param df Dataframe of symptom severity/frequency data
+#' @return The output of the EBICglasso function from qgraph, which is
+#' a partial correlation matrix
+#' @export
+
+network_estimation_fun_non_normal_gamma0 <- function(df) {
   # Calculate correlation matrix
   cor_matrix <- qgraph::cor_auto(df, detectOrdinal=FALSE, forcePD=TRUE, npn.SKEPTIC = TRUE)
   # Perform EBIC glasso with gamma = 0
@@ -36,11 +78,51 @@ network_estimation_fun_non_normal <- function(df) {
   return(EBIC_matrix)
 }
 
+#' Network estimation function that assumes all variables are non-normally distributed
+#' and uses gamma = 0.25
+#'
+#' This function is used by bootnet functions to specify how
+#' the GGM should be calculated
+#'
+#' @param df Dataframe of symptom severity/frequency data
+#' @return The output of the EBICglasso function from qgraph, which is
+#' a partial correlation matrix
+#' @export
+
+network_estimation_fun_non_normal_gamma0.25 <- function(df) {
+  # Calculate correlation matrix
+  cor_matrix <- qgraph::cor_auto(df, detectOrdinal=FALSE, forcePD=TRUE, npn.SKEPTIC = TRUE)
+  # Perform EBIC glasso with gamma = 0.25
+  EBIC_matrix <- qgraph::EBICglasso(cor_matrix, nrow(df), 0.25)
+
+  return(EBIC_matrix)
+}
+
+#' Network estimation function that assumes all variables are non-normally distributed
+#' and uses gamma = 0.5
+#'
+#' This function is used by bootnet functions to specify how
+#' the GGM should be calculated
+#'
+#' @param df Dataframe of symptom severity/frequency data
+#' @return The output of the EBICglasso function from qgraph, which is
+#' a partial correlation matrix
+#' @export
+
+network_estimation_fun_non_normal_gamma0.5 <- function(df) {
+  # Calculate correlation matrix
+  cor_matrix <- qgraph::cor_auto(df, detectOrdinal=FALSE, forcePD=TRUE, npn.SKEPTIC = TRUE)
+  # Perform EBIC glasso with gamma = 0.5
+  EBIC_matrix <- qgraph::EBICglasso(cor_matrix, nrow(df), 0.5)
+
+  return(EBIC_matrix)
+}
 
 #' Nonparametric bootstrapping
 #'
 #' This function performs nonparametric bootstrapping to analyze edge weight
-#' accuracy.
+#' accuracy. Any unspecified parameters are passed into the bootnet function
+#' from the bootnet package.
 #'
 #' @param df Dataframe of symptom severity/frequency data
 #' @param normal Whether to consider all variables normally distrubted.
@@ -48,6 +130,8 @@ network_estimation_fun_non_normal <- function(df) {
 #' @param nBoots Number of bootstrapping iterations to perform (Default: 2500)
 #' @param statistics Vector indicating which statistics to store. See bootnet
 #' for options. (Default: c('edge','strength','closeness','betweenness')
+#' @param gamma EBIC tuning parameter to use (must be 0, 0.25, or 0.5)
+#' (Default: 0)
 #' @param communities If you are running bootnet on bridge centrality measures, use
 #' this parameter to set community labels (set this to ega$wc, where ega is the
 #' output from the construct_ggm function)
@@ -55,14 +139,30 @@ network_estimation_fun_non_normal <- function(df) {
 #' bootstrapping
 #' @export
 
-nonparam_boot <- function(df, normal = FALSE, nBoots = 2500, statistics = c('edge','strength','closeness','betweenness'), communities = NULL) {
+nonparam_boot <- function(df, normal = FALSE, nBoots = 2500, statistics = c('edge','strength','closeness','betweenness'), gamma = 0, communities = NULL, ...) {
     check_data_format(df) # Check if df is formatted properly
     df <- dplyr::select(df, -ID) # Remove ID column
     
     if (normal) {
-        nonparam.boot <-bootnet::bootnet(df, nBoots=nBoots, statistics=statistics, fun='network_estimation_fun_normal', communities=communities)
+        if (gamma == 0) {
+            nonparam.boot <-bootnet::bootnet(df, nBoots=nBoots, statistics=statistics, fun='network_estimation_fun_normal_gamma0', communities=communities, ...)
+        } else if (gamma == 0.25) {
+            nonparam.boot <-bootnet::bootnet(df, nBoots=nBoots, statistics=statistics, fun='network_estimation_fun_normal_gamma0.25', communities=communities, ...)
+        } else if (gamma == 0.5) {
+            nonparam.boot <-bootnet::bootnet(df, nBoots=nBoots, statistics=statistics, fun='network_estimation_fun_normal_gamma0.5', communities=communities, ...)
+        } else {
+            stop("Gamma must be equal to 0, 0.25, or 0.5")
+        }
     } else {
-        nonparam.boot <-bootnet::bootnet(df, nBoots=nBoots, statistics=statistics, fun='network_estimation_fun_non_normal', communities=communities)
+        if (gamma == 0) {
+            nonparam.boot <-bootnet::bootnet(df, nBoots=nBoots, statistics=statistics, fun='network_estimation_fun_non_normal_gamma0', communities=communities, ...)
+        } else if (gamma == 0.25) {
+            nonparam.boot <-bootnet::bootnet(df, nBoots=nBoots, statistics=statistics, fun='network_estimation_fun_non_normal_gamma0.25', communities=communities, ...)
+        } else if (gamma == 0.5) {
+            nonparam.boot <-bootnet::bootnet(df, nBoots=nBoots, statistics=statistics, fun='network_estimation_fun_non_normal_gamma0.5', communities=communities, ...)
+        } else {
+            stop("Gamma must be equal to 0, 0.25, or 0.5")
+        }
     }
     return(nonparam.boot)
 }
@@ -113,7 +213,8 @@ summarize_nonparam_boot <- function(nonparam.boot) {
 #' Casedrop bootstrapping
 #'
 #' This function performs casedrop bootstrapping to analyze edge weight
-#' and centrality measure stability
+#' and centrality measure stability. Any unspecified parameters are passed
+#' into the bootnet function from the bootnet package.
 #'
 #' @param df Dataframe of symptom severity/frequency data
 #' @param normal Whether to consider all variables normally distrubted.
@@ -121,6 +222,8 @@ summarize_nonparam_boot <- function(nonparam.boot) {
 #' @param nBoots Number of bootstrapping iterations to perform (Default: 2500)
 #' @param statistics Vector indicating which statistics to store. See bootnet
 #' for options. (Default: c('edge','strength','closeness','betweenness')
+#' @param gamma EBIC tuning parameter to use (must be 0, 0.25, or 0.5)
+#' (Default: 0)
 #' @param communities If you are running bootnet on bridge centrality measures, use
 #' this parameter to set community labels (set this to ega$wc, where ega is the
 #' output from the construct_ggm function)
@@ -128,14 +231,30 @@ summarize_nonparam_boot <- function(nonparam.boot) {
 #' bootstrapping
 #' @export
 
-casedrop_boot <- function(df, normal = FALSE, nBoots = 2500, statistics = c('edge','strength','closeness','betweenness'), communities = NULL) {
+casedrop_boot <- function(df, normal = FALSE, nBoots = 2500, statistics = c('edge','strength','closeness','betweenness'), gamma = 0, communities = NULL, ...) {
     check_data_format(df) # Check if df is formatted properly
     df <- dplyr::select(df, -ID) # Remove ID column
     
     if (normal) {
-        casedrop.boot <-bootnet::bootnet(df, nBoots=nBoots, type="case", statistics=statistics, fun='network_estimation_fun_normal', communities=communities)
+        if (gamma == 0) {
+            casedrop.boot <-bootnet::bootnet(df, nBoots=nBoots, type="case", statistics=statistics, fun='network_estimation_fun_normal_gamma0', communities=communities, ...)
+        } else if (gamma == 0.25) {
+            casedrop.boot <-bootnet::bootnet(df, nBoots=nBoots, type = "case", statistics=statistics, fun='network_estimation_fun_normal_gamma0.25', communities=communities, ...)
+        } else if (gamma == 0.5) {
+            casedrop.boot <-bootnet::bootnet(df, nBoots=nBoots, type="case", statistics=statistics, fun='network_estimation_fun_normal_gamma0.5', communities=communities, ...)
+        } else {
+            stop("Gamma must be equal to 0, 0.25, or 0.5")
+        }
     } else {
-        casedrop.boot <-bootnet::bootnet(df, nBoots=nBoots, type="case", statistics=statistics, fun='network_estimation_fun_non_normal', communities=communities)
+        if (gamma == 0) {
+            casedrop.boot <-bootnet::bootnet(df, nBoots=nBoots, type="case", statistics=statistics, fun='network_estimation_fun_non_normal_gamma0', communities=communities, ...)
+        } else if (gamma == 0.25) {
+            casedrop.boot <-bootnet::bootnet(df, nBoots=nBoots, type = "case", statistics=statistics, fun='network_estimation_fun_non_normal_gamma0.25', communities=communities, ...)
+        } else if (gamma == 0.5) {
+            casedrop.boot <-bootnet::bootnet(df, nBoots=nBoots, type="case", statistics=statistics, fun='network_estimation_fun_non_normal_gamma0.5', communities=communities, ...)
+        } else {
+            stop("Gamma must be equal to 0, 0.25, or 0.5")
+        }
     }
     return(casedrop.boot)
 }
@@ -210,7 +329,8 @@ cor_stability_analysis <- function(casedrop.boot) {
 #' Nodedrop bootstrapping
 #'
 #' This function performs nodedrop bootstrapping to analyze edge weight
-#' and centrality measure stability
+#' and centrality measure stability. Any unspecified parameters are passed
+#' into the bootnet function from the bootnet package.
 #'
 #' @param df Dataframe of symptom severity/frequency data
 #' @param normal Whether to consider all variables normally distrubted.
@@ -218,18 +338,36 @@ cor_stability_analysis <- function(casedrop.boot) {
 #' @param nBoots Number of bootstrapping iterations to perform (Default: 2500)
 #' @param statistics Vector indicating which statistics to store. See bootnet
 #' for options. (Default: c('edge','strength','closeness','betweenness')
+#' @param gamma EBIC tuning parameter to use (must be 0, 0.25, or 0.5)
+#' (Default: 0)
 #' @return The output of the bootnet function when run with nodedrop
 #' bootstrapping
 #' @export
 
-nodedrop_boot <- function(df, normal = FALSE, nBoots = 2500, statistics = c('edge','strength','closeness','betweenness')) {
+nodedrop_boot <- function(df, normal = FALSE, nBoots = 2500, statistics = c('edge','strength','closeness','betweenness'), gamma = 0, ...) {
     check_data_format(df) # Check if df is formatted properly
     df <- dplyr::select(df, -ID) # Remove ID column
     
     if (normal) {
-        nodedrop.boot <-bootnet::bootnet(df, nBoots=nBoots, type="node", statistics=statistics, fun='network_estimation_fun_normal')
+        if (gamma == 0) {
+            nodedrop.boot <-bootnet::bootnet(df, nBoots=nBoots, type="node", statistics=statistics, fun='network_estimation_fun_normal_gamma0', ...)
+        } else if (gamma == 0.25) {
+            nodedrop.boot <-bootnet::bootnet(df, nBoots=nBoots, type = "node", statistics=statistics, fun='network_estimation_fun_normal_gamma0.25', ...)
+        } else if (gamma == 0.5) {
+            nodedrop.boot <-bootnet::bootnet(df, nBoots=nBoots, type="node", statistics=statistics, fun='network_estimation_fun_normal_gamma0.5', ...)
+        } else {
+            stop("Gamma must be equal to 0, 0.25, or 0.5")
+        }
     } else {
-        nodedrop.boot <-bootnet::bootnet(df, nBoots=nBoots, type="node", statistics=statistics, fun='network_estimation_fun_non_normal')
+        if (gamma == 0) {
+            nodedrop.boot <-bootnet::bootnet(df, nBoots=nBoots, type="node", statistics=statistics, fun='network_estimation_fun_non_normal_gamma0', ...)
+        } else if (gamma == 0.25) {
+            nodedrop.boot <-bootnet::bootnet(df, nBoots=nBoots, type = "node", statistics=statistics, fun='network_estimation_fun_non_normal_gamma0.25', ...)
+        } else if (gamma == 0.5) {
+            nodedrop.boot <-bootnet::bootnet(df, nBoots=nBoots, type="node", statistics=statistics, fun='network_estimation_fun_non_normal_gamma0.5', ...)
+        } else {
+            stop("Gamma must be equal to 0, 0.25, or 0.5")
+        }
     }
     return(nodedrop.boot)
 }

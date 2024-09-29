@@ -12,7 +12,8 @@ run_NCT(
   p.adjust.methods = "none",
   test.edges = TRUE,
   test.centrality = TRUE,
-  centrality = c("closeness", "betweenness", "strength", "expectedInfluence")
+  centrality = c("closeness", "betweenness", "strength", "expectedInfluence"),
+  gamma = 0
 )
 }
 \arguments{
@@ -37,6 +38,9 @@ measures (Default: TRUE)}
 
 \item{centrality}{Vector of which centrality measures to test (Default:
 c('closeness','betweenness','strength','expectedInfluence'))}
+
+\item{gamma}{EBIC tuning parameter to use (must be 0, 0.25, or 0.5)
+(Default: 0)}
 }
 \value{
 The output of the NCT function from the NetworkComparisonTest

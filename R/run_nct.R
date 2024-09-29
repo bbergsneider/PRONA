@@ -17,11 +17,13 @@
 #' measures (Default: TRUE)
 #' @param centrality Vector of which centrality measures to test (Default:
 #' c('closeness','betweenness','strength','expectedInfluence'))
+#' @param gamma EBIC tuning parameter to use (must be 0, 0.25, or 0.5)
+#' (Default: 0)
 #' @return The output of the NCT function from the NetworkComparisonTest
 #' package
 #' @export
 #' 
-run_NCT <- function(df1, df2, normal=FALSE, it = 2500, p.adjust.methods = "none", test.edges=TRUE, test.centrality=TRUE, centrality=c('closeness','betweenness','strength','expectedInfluence')) {
+run_NCT <- function(df1, df2, normal=FALSE, it = 2500, p.adjust.methods = "none", test.edges=TRUE, test.centrality=TRUE, centrality=c('closeness','betweenness','strength','expectedInfluence'), gamma=0) {
     # Check if data is formatted properly
     check_data_format(df1)
     check_data_format(df2)
@@ -29,9 +31,25 @@ run_NCT <- function(df1, df2, normal=FALSE, it = 2500, p.adjust.methods = "none"
     df2 <- dplyr::select(df2, -ID)
     
     if (normal) {
-        estimator = 'network_estimation_fun_normal'
+        if (gamma == 0){
+            estimator = 'network_estimation_fun_normal_gamma0'
+        } else if (gamma == 0.25) {
+            estimator = 'network_estimation_fun_normal_gamma0.25'
+        } else if (gamma == 0.5) {
+            estimator = 'network_estimation_fun_normal_gamma0.5'
+        } else {
+            stop("Gamma must be equal to 0, 0.25, or 0.5")
+        }
     } else {
-        estimator = 'network_estimation_fun_non_normal'
+        if (gamma == 0){
+            estimator = 'network_estimation_fun_non_normal_gamma0'
+        } else if (gamma == 0.25) {
+            estimator = 'network_estimation_fun_non_normal_gamma0.25'
+        } else if (gamma == 0.5) {
+            estimator = 'network_estimation_fun_non_normal_gamma0.5'
+        } else {
+            stop("Gamma must be equal to 0, 0.25, or 0.5")
+        }
     }
 
     res <- NetworkComparisonTest::NCT(df1, df2, it=it, estimator = estimator, test.edges = test.edges, edges = 'all', p.adjust.methods = p.adjust.methods, test.centrality = test.centrality, centrality = centrality, nodes = 'all')
