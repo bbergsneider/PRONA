@@ -8,7 +8,9 @@ nodedrop_boot(
   df,
   normal = FALSE,
   nBoots = 2500,
-  statistics = c("edge", "strength", "closeness", "betweenness")
+  statistics = c("edge", "strength", "closeness", "betweenness"),
+  gamma = 0,
+  ...
 )
 }
 \arguments{
@@ -21,6 +23,9 @@ If false, conducts a non-paranormal transformation (Default: FALSE)}
 
 \item{statistics}{Vector indicating which statistics to store. See bootnet
 for options. (Default: c('edge','strength','closeness','betweenness')}
+
+\item{gamma}{EBIC tuning parameter to use (must be 0, 0.25, or 0.5)
+(Default: 0)}
 }
 \value{
 The output of the bootnet function when run with nodedrop
@@ -28,5 +33,6 @@ bootstrapping
 }
 \description{
 This function performs nodedrop bootstrapping to analyze edge weight
-and centrality measure stability
+and centrality measure stability. Any unspecified parameters are passed
+into the bootnet function from the bootnet package.
 }

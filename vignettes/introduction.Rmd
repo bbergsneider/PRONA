@@ -216,6 +216,18 @@ plot_ggm(ptsd_network, label.size = 2.5)
 head(get_ggm_weights(ptsd_network))
 ```
 
+The construct_ggm function uses the EBIC-GLASSO method for calculating a
+regularized GGM, and it uses the same method as the EGAnet package for
+defining gamma. Specifically, gamma is initially set to 0.5 and a
+network is constructed. If there are any unconnected nodes in the
+network, gamma is decreased to 0.25. If there are still any unconnected
+nodes, gamma is decreased to 0. To check what gamma was ultimately used,
+check the summary of the network (in this case gamma = 0.5):
+
+```{r}
+summary(ptsd_network)
+```
+
 ### 6. Calculate network centrality measurements
 
 Finally, we can calculate centrality and bridge centrality measurements

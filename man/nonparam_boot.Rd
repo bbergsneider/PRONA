@@ -9,7 +9,9 @@ nonparam_boot(
   normal = FALSE,
   nBoots = 2500,
   statistics = c("edge", "strength", "closeness", "betweenness"),
-  communities = NULL
+  gamma = 0,
+  communities = NULL,
+  ...
 )
 }
 \arguments{
@@ -23,6 +25,9 @@ If false, conducts a non-paranormal transformation (Default: FALSE)}
 \item{statistics}{Vector indicating which statistics to store. See bootnet
 for options. (Default: c('edge','strength','closeness','betweenness')}
 
+\item{gamma}{EBIC tuning parameter to use (must be 0, 0.25, or 0.5)
+(Default: 0)}
+
 \item{communities}{If you are running bootnet on bridge centrality measures, use
 this parameter to set community labels (set this to ega$wc, where ega is the
 output from the construct_ggm function)}
@@ -33,5 +38,6 @@ bootstrapping
 }
 \description{
 This function performs nonparametric bootstrapping to analyze edge weight
-accuracy.
+accuracy. Any unspecified parameters are passed into the bootnet function
+from the bootnet package.
 }

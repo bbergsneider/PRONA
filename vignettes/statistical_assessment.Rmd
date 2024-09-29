@@ -79,7 +79,7 @@ plot_item_stability(dimStab)
 ### 3. Perform nonparametric bootstrapping to analyze edge weight accuracy
 
 To perform nonparametric bootstrapping, we use the nonparam_boot
-function, which has five parameters:
+function, which has six parameters:
 
 -   df: A dataframe of symptom severity/frequency data
 
@@ -93,14 +93,18 @@ function, which has five parameters:
     for options. (Default:
     c('edge','strength','closeness','betweenness')
 
+-   gamma: The EBIC tuning parameter to use. Must be 0, 0.25, or 0.5.
+    (Default: 0)
+
 -   communities: If you are running bootnet on bridge centrality
     measures, use this parameter to set community labels (set this to
-    ega\$wc, where ega is the output from the construct_ggm function).
+    ega\$wc, where ega is the output from the construct_ggm function)
 
 ```{r, results='hide'}
 nonparam.boot.file <- "../../PRONA_additional_files/test_scripts/output/nonparam.boot.RDS"
 if (!file.exists(nonparam.boot.file)){
-  nonparam.boot <- nonparam_boot(reduced_df, normal = FALSE, statistics = c('edge','strength','closeness','betweenness','bridgeStrength','bridgeCloseness','bridgeBetweenness'), communities = ptsd_network$wc)
+  # since the construct_ggm function used a gamma = 0.5, we will do the same here
+  nonparam.boot <- nonparam_boot(reduced_df, normal = FALSE, statistics = c('edge','strength','closeness','betweenness','bridgeStrength','bridgeCloseness','bridgeBetweenness'), communities = ptsd_network$wc, gamma = 0.5)
   saveRDS(nonparam.boot, nonparam.boot.file)}
 nonparam.boot <- readRDS(nonparam.boot.file)
 ```
@@ -119,12 +123,12 @@ summarize_nonparam_boot(nonparam.boot)
 ### 4. Perform casedrop and nodedrop bootstrapping to analyze edge weight and centrality stability
 
 To perform casedrop bootstrapping, we use the casedrop_boot function,
-which has the same five parameters as the nonparam_boot function.
+which has the same six parameters as the nonparam_boot function.
 
 ```{r, results='hide'}
 casedrop.boot.file <- "../../PRONA_additional_files/test_scripts/output/casedrop.boot.RDS"
 if (!file.exists(casedrop.boot.file)){
-  casedrop.boot <- casedrop_boot(reduced_df, normal = FALSE, statistics = c('edge','strength','closeness','betweenness','bridgeStrength','bridgeCloseness','bridgeBetweenness'), communities = ptsd_network$wc)
+  casedrop.boot <- casedrop_boot(reduced_df, normal = FALSE, statistics = c('edge','strength','closeness','betweenness','bridgeStrength','bridgeCloseness','bridgeBetweenness'), communities = ptsd_network$wc, gamma = 0.5)
   saveRDS(casedrop.boot, casedrop.boot.file)}
 casedrop.boot <- readRDS(casedrop.boot.file)
 ```
@@ -156,7 +160,7 @@ Finally, let's perform nodedrop bootstrapping and plot the results.
 ```{r, results='hide'}
 nodedrop.boot.file <- "../../PRONA_additional_files/test_scripts/output/nodedrop.boot.RDS"
 if (!file.exists(nodedrop.boot.file)){
-  nodedrop.boot <- nodedrop_boot(reduced_df, normal = FALSE, statistics = c('edge','strength','closeness','betweenness'))
+  nodedrop.boot <- nodedrop_boot(reduced_df, normal = FALSE, statistics = c('edge','strength','closeness','betweenness'), gamma = 0.5)
   saveRDS(nodedrop.boot, nodedrop.boot.file)}
 nodedrop.boot <- readRDS(nodedrop.boot.file)
 ```

@@ -4,7 +4,7 @@
 \alias{construct_ggm}
 \title{Construct a Gaussian Graphical Model (GGM)}
 \usage{
-construct_ggm(df, normal = FALSE)
+construct_ggm(df, normal = FALSE, ...)
 }
 \arguments{
 \item{df}{Dataframe of symptom severity/frequency data}
@@ -18,5 +18,6 @@ The output of the EGA function from EGAnet
 \description{
 This function takes in a dataframe of symptom severity/frequency data
 (in PRONA format) at creates a Gaussian Graphical Model (GGM) for it
-using the EGA function from the R package EGAnet.
+using the EGA function from the R package EGAnet. Any unspecified parameters
+are passed into the EGA function in EGAnet.
 }
