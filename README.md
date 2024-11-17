@@ -1,6 +1,6 @@
 # PRONA (Patient Reported Outcomes Network Analysis)
  
-PRONA allows users to perform symptom network analysis using patient reported outcomes data. PRONA not only consolidates previous NA tools into a unified, easy-to-use analysis pipeline, but also augments the traditional approach with functionality for performing unsupervised discovery of patient subgroups with distinct symptom patterns. For more details, please see our publication in Bioinformatics overviewing the PRONA package: [Bergsneider & Celiku, Bioinformatics, 2024](https://pubmed.ncbi.nlm.nih.gov/39520406/).
+PRONA allows users to perform symptom network analysis using patient reported outcomes data. PRONA not only consolidates previous network analysis tools into a unified, easy-to-use analysis pipeline, but also augments the traditional approach with functionality for performing unsupervised discovery of patient subgroups with distinct symptom patterns. For more details, please see our publication in Bioinformatics overviewing the PRONA package: [Bergsneider & Celiku, Bioinformatics, 2024](https://pubmed.ncbi.nlm.nih.gov/39520406/).
 
 To install the PRONA package in R, use the following command:
 
