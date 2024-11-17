@@ -40,15 +40,15 @@ construct_ggm <- function(df, normal = FALSE, ...) {
 plot_ggm <- function(ega, colors = NULL, legend.names = NULL, label.size = 3.5) {
     if (is.null(colors)) {
         if (is.null(legend.names)) {
-            ega_plot <- plot(ega, plot.args = list(node.size = 8, label.size = label.size))
+            ega_plot <- plot(ega, node.size = 8, label.size = label.size)
         } else {
-            ega_plot <- plot(ega, plot.args = list(node.size = 8, label.size = label.size, legend.names = legend.names))
+            ega_plot <- plot(ega, node.size = 8, label.size = label.size, legend.names = legend.names)
         }
     } else {
         if (is.null(legend.names)) {
-            ega_plot <- plot(ega, plot.args = list(node.size = 8, label.size = label.size, color.palette = colors))
+            ega_plot <- plot(ega, node.size = 8, label.size = label.size, color.palette = colors)
         } else {
-            ega_plot <- plot(ega, plot.args = list(node.size = 8, label.size = label.size, color.palette = colors, legend.names = legend.names))
+            ega_plot <- plot(ega, node.size = 8, label.size = label.size, color.palette = colors, legend.names = legend.names)
         }
     }
     return(ega_plot)
