@@ -16,12 +16,13 @@ input their own Patient Reported Outcomes (PRO) data on symptom
 occurrence/frequency/severity and use Network Analysis (NA) to identify
 complex symptom concordance patterns and symptom clusters. For an
 example of how our group has used NA to characterize symptom patterns in
-primary brain tumor patients, please see [Bergsneider et al.,
-Neuro-Oncology Advances,
-2022](https://pubmed.ncbi.nlm.nih.gov/36820236/). The steps outlined in
-this vignette follow the analysis pipeline described in the paper. For
+cancer patients, please see [Bergsneider et al., Neuro-Oncology
+Advances, 2022](https://pubmed.ncbi.nlm.nih.gov/36820236/) and
+[Bergsneider et al., Cancer Medicine,
+2024](https://pubmed.ncbi.nlm.nih.gov/39377555/). The steps outlined in
+this vignette follow the analysis pipeline described in the papers. For
 more background on NA and its applications to PRO data, please refer to
-the paper as well.
+the papers as well.
 
 ### 1. Load PRONA and data to analyze
 

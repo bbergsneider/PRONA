@@ -15,9 +15,10 @@ concordance network-based unsupervised clustering to identify
 communities of patients with unique symptom network patterns. For more
 information on this clustering method and examples of its applications,
 please see [Henry et al., Plos One,
-2018](https://doi.org/10.1371/journal.pone.0191981) and [Bergsneider et
+2018](https://doi.org/10.1371/journal.pone.0191981), [Bergsneider et
 al., Neuro-Oncology Advances,
-2022](https://doi.org/10.1093/noajnl/vdac188).
+2022](https://doi.org/10.1093/noajnl/vdac188), and [Bergsneider et al.,
+Cancer Medicine, 2024](https://doi.org/10.1002/cam4.70278).
 
 ### 1. Load PRONA, download data, and construct a GGM
 
